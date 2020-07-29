@@ -1,0 +1,16 @@
+## RUN
+
+# (Node)
+## vn: the number of nodes
+## v the group of node
+vn 3
+v 1
+v 3
+v 5
+
+# (Edge)
+## en: the number of edges
+## e: v1 v2
+en 2
+e 1 3
+e 2 3
