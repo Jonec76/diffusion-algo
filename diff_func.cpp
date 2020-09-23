@@ -3,43 +3,31 @@
 #include <bits/stdc++.h> 
 #include <iostream>
 #include <vector>
-
+#include <time.h>
+#include <cstdlib>
 #include "data.h"
+#include "graph.h"
 
 using namespace std;
 
-string title[5] = {"infected", "ailing", "threatened", "dead", "recovered"};
+string title[6] = {"susceptible", "infected", "ailing", "threatened", "dead", "recovered"};
+struct el el0 ={0, 0}, el1 ={0.3, 0.3}, el2 ={0.7, 0.7}, el3 ={1, 1};
+vector<struct el>L = {el0, el1, el2, el3};
+double alpha_f=0.8, alpha_g=0.9, param_c=2; 
 
-
-vector<struct el>L;
-
-void init_effective_table(){
-    int level = 4;
-    struct el e[level];
-    
-    e[0].remove_p = 0;
-    e[0].phi_cost = 0;
-    e[1].remove_p = 0.3;
-    e[1].phi_cost = 0.3;
-    e[2].remove_p = 0.7;
-    e[2].phi_cost = 0.7;
-    e[3].remove_p = 1;
-    e[3].phi_cost = 1;
-    
-    for(int i=0;i<level;i++)
-        L.push_back(e[i]);
-}
 void print_group(vector<vector<struct node*>*> v) {
-    for (int i = 0; i < v.size(); i++) {
-        cout << title[i] << endl;
-        for (int j = 0; j < v[i]->size(); j++) {
-            cout << v[i]->at(j)->id << endl;
+    cout<<"\n";
+    for (size_t i = 0; i < v.size(); i++) {
+        cout << title[i] <<":";
+        for (size_t j = 0; j < v[i]->size(); j++) {
+            cout << v[i]->at(j)->id <<" ";
         }
+        cout<<"\n";
     }
 }
 
 void printVec(vector<struct node> v) {
-    for (int i = 0; i < v.size(); i++) {
+    for (size_t i = 0; i < v.size(); i++) {
         cout << v[i].id << endl;
     }
 }
@@ -57,7 +45,7 @@ double get_contagion(int type) {
 }
 
 void migrate(vector<struct node*>* from, vector<struct node*>* to, struct node* v) {
-    for (int i = 0; i < from->size(); i++) {
+    for (size_t i = 0; i < from->size(); i++) {
         if (from->at(i)->id == v->id) {
             from->erase(from->begin() + i);
             break;
@@ -72,9 +60,9 @@ void migrate(vector<struct node*>* from, vector<struct node*>* to, struct node* 
 //  2:threatened
 //  3:dead
 //  4:recovered
-void self_transmission_process(vector<vector<struct node*>*> from, vector<vector<struct node*>*> to, struct node* v, int t) {
+void self_transmission_process(vector<vector<struct node*>*> from, vector<vector<struct node*>*> to, struct node* v) {
     double r = (rand() % 100) / 100.0;
-    switch (v->stage) {
+    switch (v->stage) { // TODO: init it
         case Stage::infected:
             if (r < v->params.symptom) {
                 v->stage = Stage::ailing;
@@ -108,59 +96,62 @@ void self_transmission_process(vector<vector<struct node*>*> from, vector<vector
 }
 
 void tmp_push_back(vector<vector<struct node*>*> from, vector<vector<struct node*>*> to) {
-    for (int i = 0; i < from.size(); i++) {
-        for (int j = 0; j < from[i]->size(); j++) {
+    for (size_t i = 0; i < from.size(); i++) {
+        for (size_t j = 0; j < from[i]->size(); j++) {
             to[i]->push_back(from[i]->at(j));
         }
+        from[i]->clear();
     }
 }
 
 bool remove_edge(struct node* v, struct node* u){
-    int q_max_level = max(v->q_state, u->q_state);
+    printf("v: %d, neighbor_u: %d", v->id, u->id);
+    int q_max_level = max(v->q_level, u->q_level);
     double remove_p = L[q_max_level].remove_p;
-    if((rand() % 100)/100.0 > remove_p)
+    double r = (rand() % 100)/100.0;
+    cout<<"remove_edge_p: "<<remove_p<<" < "<<r<<endl;
+    if(remove_p < r)
         return false;
     else
         return true;
 }
 
 // Only v.stage==I, A, T will enter into this function.
-void infection_process(vector<struct edge>* e, vector<node*> N, vector<struct node*>* from, vector<struct node*>* to, struct node* v, vector<struct X> X_t) {
+void infection_process(Graph& g, vector<struct node*>& from, vector<struct node*>& to, struct node* v, vector<struct X> X_t) {
     // set quarantine state
-
-    for(int i=0;i<adj[v->id].size();i++){
-        struct node* u = N[adj[v->id][i].neighbor]; // the neighbor of V
+    for(size_t i=0;i<g.adj[v->id].size();i++){
+        struct node* u = g.N[g.adj[v->id][i].neighbor]; // the neighbor of V
         if(u->stage == Stage::susceptible){
             if(!remove_edge(v, u)){
-                double p = e[u->id][v->id].p * u->params.contagion;
+                double p = g.get_edge_prob(u, v) * u->params.contagion;
                 double r = (rand() % 100) / 100.0;
                 if (v->stage== Stage::infected)
                     p *= u->params.relative;
                 if (r < p) {
                     u->stage = Stage::infected;
-                    migrate(from, to, u);
+                    migrate(&from, &to, u);
                 }
             }
         }
     }
-    
     // modify stage
-
     // undo quarantine state
 }
 
-double q_t(vector<struct X> X_t) {
+double q_t(vector<struct X> X_t, int V, vector<struct node*>& N) {
     int q_node;
-    int s_ctr_xt=0, i_ctr_xt=0, r_ctr_xt=0;
 
-    for(int i=0;i<X_t.size();i++){ // each X
-        bool choose_table[V];
-        memset(choose_table, false, V); // for clearing previous record
-        for(int j=0;j<X_t[i].D.size();j++){ // each node of X.D
+    int s_ctr_xt=0, i_ctr_xt=0, r_ctr_xt=0;
+    bool choose_table[V];
+    memset(choose_table, false, V * sizeof(bool)); // for clearing previous record
+    for(size_t i=0;i<X_t.size();i++){ // each X
+        for(size_t j=0;j<X_t[i].D.size();j++){ // each node of X.D
             q_node = X_t[i].D[j];
+            printf(choose_table[q_node] ? "true\n" : "false\n");
+            printf("q: %d\n", q_node);
             if(!choose_table[q_node]){
                 choose_table[q_node] = true;
-                switch (N[q_node]->q_state){
+                switch (N[q_node]->stage){
                     case Stage::susceptible:
                         choose_table[q_node] = true;
                         s_ctr_xt++;
@@ -178,16 +169,15 @@ double q_t(vector<struct X> X_t) {
                 } 
             }
         }
-        free(choose_table);
     }
-
+    printf("s:%d, i:%d, r:%d\n", s_ctr_xt, i_ctr_xt, r_ctr_xt);
     return (w_S * s_ctr_xt) + (w_I * i_ctr_xt) + (w_R * r_ctr_xt);
 }
 
 double M_t(vector<struct X> X_t) {
     double sum = 0;
     for (int i = 0; i < X_t.size(); i++) {
-        sum += X_t[i].eta;  // Should set eta value as 2/|D| when there is no default value.
+        sum += (X_t[i].eta == eta_default? 2.0 / (double)X_t[i].D.size():X_t[i].eta);  // Should set eta value as 2/|D| when there is no default value.
     }
     return sum - sqrt(sum);
 }
@@ -197,10 +187,9 @@ double f_t(vector<vector<struct node*>*> health_group) {
     return (w_S * s_ctr) + (w_I * i_ctr) + (w_R * r_ctr);
 }
 
-double objective_at_t(vector<vector<struct node*>*> health_group, vector<struct X> X_t) {
-    double q = 1 + q_t(X_t);
+double objective_at_t(vector<vector<struct node*>*> health_group, vector<struct X> X_t, int v, vector<struct node*>& N) {
+    double q = 1 + q_t(X_t, v, N);
     double t = 1/param_c;
     return alpha_f * f_t(health_group) - alpha_g * M_t(X_t) * pow(q, t);
 }
-
 

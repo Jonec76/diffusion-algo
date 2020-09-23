@@ -14,16 +14,11 @@
 #define health_i 1
 #define health_r 2
 
+#define eta_default -1
 #include<iostream>
 #include<vector>
 using namespace std;
 
-extern double alpha_f = 0.2;
-extern double alpha_g = 0.7;
-extern int V=3, E=2, T=1;
-extern vector<struct node*> N;
-extern vector<struct edge> adj[V]; 
-extern int param_c;
 
 enum Stage{
     susceptible, 
@@ -49,15 +44,16 @@ struct node{
     int id;
     Stage stage;
     struct Params{
-        double relative=1;
-        double contagion=0;
-        double symptom=0;
-        double critical=0;
-        double healing=0;
-        double death=0;
-    }params; 
-    bool quarantine=false;
-    int q_state;
+        double relative;
+        double contagion;
+        double symptom;
+        double critical;
+        double healing;
+        double death;
+    }params;
+    bool quarantine;
+    int q_level;
+    int type;
 };
 
 // Group
@@ -70,5 +66,4 @@ struct X{
 
 
 extern vector<struct X> U;
-
 #endif
