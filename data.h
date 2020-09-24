@@ -15,6 +15,11 @@
 #define health_r 2
 
 #define eta_default -1
+
+#define budget 10
+#define U_LENGTH 20
+#define out_of_cost -1
+
 #include<iostream>
 #include<vector>
 using namespace std;
@@ -58,12 +63,10 @@ struct node{
 
 // Group
 struct X{
+    int id;
     vector<int>D; // Should be sorted during init level.
     int t;
     int lv;
     double eta; // -1 for not given eta value
 };
-
-
-extern vector<struct X> U;
 #endif

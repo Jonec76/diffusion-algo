@@ -15,6 +15,7 @@ class Graph{
         int V=3, E=2;
         vector<struct node*> N;
         vector<vector<struct edge> > adj;
-        void free_N();
+        vector<vector<struct X> > U;
+        void free_N(); // desconstructor
 };
 #endif
