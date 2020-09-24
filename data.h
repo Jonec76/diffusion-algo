@@ -15,6 +15,7 @@
 #define health_r 2
 
 #define eta_default -1
+#define period_T 10
 
 #define budget 10
 #define U_LENGTH 20

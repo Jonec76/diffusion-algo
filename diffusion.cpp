@@ -5,7 +5,7 @@
 #include "diff_func.h"
 using namespace std;
 
-double diffusion(vector<vector<struct X>> Strategy, int T, int sample_size, Graph& g){
+double diffusion(vector<vector<struct X>> Strategy, int sample_size, Graph& g){
     long double f = 0;
     int param_c;
 
@@ -36,7 +36,7 @@ double diffusion(vector<vector<struct X>> Strategy, int T, int sample_size, Grap
         
         vector<struct node*> tmp_susceptible, tmp_infected, tmp_ailing, tmp_threatened, tmp_recovered, tmp_dead;
         vector<vector<struct node*>*> tmp_group{&tmp_infected, &tmp_ailing, &tmp_threatened, &tmp_dead, &tmp_recovered};// Shall align the order of total_group 
-        for(int t=0;t<T;t++){// Quarantine
+        for(int t=0;t<period_T;t++){// Quarantine
             printf("\n day: %d\n", t);
             for(size_t i=0;i<positive_group.size();i++){ // infected, ailing, threatened
                 for(size_t j=0;j<positive_group[i]->size();j++){ // node of each group
