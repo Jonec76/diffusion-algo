@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "diff_func.h"
+#include "graph.h"
 using namespace std;
 
 double get_X_cost(struct X group){
@@ -31,21 +32,18 @@ void calc_baseline(Graph& g, vector<vector<struct X>>& A, double diff_A_value, d
             one_dim_idx++;
         }
     }
-
 }
 
-vector<vector<struct X>> greedy_algo(Graph& g){
-    vector<vector<struct X>> A, B;
-    // init A, B
+vector<vector<struct X> > greedy_algo(Graph& g){
+    vector<vector<struct X>> A, B, S;
 
     int i=0, j=-1, sample_size;
-    Graph g = Graph(5, 4);
 
     double cost_A = get_group_cost(A);
     double cost_b = get_group_cost(B);
     bool X_in_set_A[U_LENGTH];
     memset(X_in_set_A, false, U_LENGTH * sizeof(bool)); // for clearing previous record
-    double* baseline_table = (double*)malloc(U_LENGTH * sizeof(double));
+    double baseline_table[U_LENGTH];
     double diff_A_value = 0;
 
     while(cost_A < budget || cost_b < budget){
@@ -53,4 +51,5 @@ vector<vector<struct X>> greedy_algo(Graph& g){
         calc_baseline(g, A, diff_A_value, cost_A, &baseline_table, X_in_set_A, sample_size);
         // PSPD
     }
+    return S;
 }
