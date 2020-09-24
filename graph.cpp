@@ -20,7 +20,7 @@ Graph::Graph(int V_, int E_){
     // init type  => contagion
 }
 
-void Graph::free_N(){
+Graph::~Graph(){
     for(int i=0;i<N.size();i++){
         free(N[i]);
     }
