@@ -18,8 +18,10 @@
 #define period_T 2
 
 #define budget 10
-#define U_LENGTH 20
+#define U_LENGTH 4
 #define out_of_cost -1
+#define sample_size 3
+#define has_in_set -1
 
 #include<iostream>
 #include<vector>
@@ -54,17 +56,19 @@ struct node{
         double contagion;
         double symptom;
         double critical;
-        double healing;
+        double healing_fromI;
+        double healing_fromA;
+        double healing_fromT;
         double death;
     }params;
-    bool quarantine;
-    int q_level;
+    int q_level; // TODO
     int type;
 };
 
 // Group
 struct X{
     int id;
+    double cost;
     vector<int>D; // Should be sorted during init level.
     int t;
     int lv;

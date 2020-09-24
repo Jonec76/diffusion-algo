@@ -5,10 +5,9 @@
 #include "diff_func.h"
 using namespace std;
 
-double diffusion(vector<vector<struct X>> Strategy, int sample_size, Graph& g){
+double diffusion(vector<vector<struct X>> Strategy, int sam_size, Graph& g){
     long double f = 0;
     int param_c;
-
     for(int i=0;i<sample_size;i++){
         vector<struct node*>susceptible, infected, ailing, threatened, recovered, dead;
         vector<vector<struct node*>*> total_group{&infected, &ailing, &threatened, &dead, &recovered}; 

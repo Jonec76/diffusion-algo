@@ -11,9 +11,8 @@
 using namespace std;
 
 string title[6] = {"susceptible", "infected", "ailing", "threatened", "dead", "recovered"};
-struct el el0 ={0, 0}, el1 ={0.3, 0.3}, el2 ={0.7, 0.7}, el3 ={1, 1};
-vector<struct el>L = {el0, el1, el2, el3};
 double alpha_f=0.8, alpha_g=0.9, param_c=2; 
+extern vector<struct el> level_table;
 
 void print_group(vector<vector<struct node*>*> v) {
     cout<<"\n";
@@ -67,7 +66,7 @@ void self_transmission_process(vector<vector<struct node*>*> from, vector<vector
             if (r < v->params.symptom) {
                 v->stage = Stage::ailing;
                 migrate(from[0], to[1], v);
-            } else if (r < v->params.symptom + v->params.healing) {
+            } else if (r < v->params.symptom + v->params.healing_fromI) {
                 v->stage = Stage::recovered;
                 migrate(from[0], to[4], v);
             }
@@ -76,7 +75,7 @@ void self_transmission_process(vector<vector<struct node*>*> from, vector<vector
             if (r < v->params.critical) {
                 v->stage = Stage::threatened;
                 migrate(from[1], to[2], v);
-            } else if (r < v->params.critical + v->params.healing) {
+            } else if (r < v->params.critical + v->params.healing_fromA) {
                 v->stage = Stage::recovered;
                 migrate(from[1], to[4], v);
             }
@@ -85,7 +84,7 @@ void self_transmission_process(vector<vector<struct node*>*> from, vector<vector
             if (r < v->params.death) {
                 v->stage = Stage::dead;
                 migrate(from[2], to[3], v);
-            } else if (r < v->params.death + v->params.healing) {
+            } else if (r < v->params.death + v->params.healing_fromT) {
                 v->stage = Stage::recovered;
                 migrate(from[2], to[4], v);
             }
@@ -107,7 +106,7 @@ void tmp_push_back(vector<vector<struct node*>*> from, vector<vector<struct node
 bool remove_edge(struct node* v, struct node* u){
     printf("v: %d, neighbor_u: %d", v->id, u->id);
     int q_max_level = max(v->q_level, u->q_level);
-    double remove_p = L[q_max_level].remove_p;
+    double remove_p = level_table[q_max_level].remove_p;
     double r = (rand() % 100)/100.0;
     cout<<"remove_edge_p: "<<remove_p<<" < "<<r<<endl;
     if(remove_p < r)
