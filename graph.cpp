@@ -12,11 +12,28 @@ Graph::Graph(int V_, int E_){
         // tmp->params.contagion = get_contagion(type);
         tmp->params.relative = 1;
         tmp->params.contagion = 0.5;
+        tmp->params.critical = 0.5;
+        tmp->params.death = 0.5;
+        tmp->params.healing_fromA = 0.5;
+        tmp->params.healing_fromI = 0.5;
+        tmp->params.healing_fromT = 0.5;
+        tmp->params.symptom = 0.5;
+        
         tmp->q_level = q_free;
+
         vector<struct edge> tmp_e;
         adj.push_back(tmp_e);
         N.push_back(tmp);
     }
+    // Init U
+    for(int i=0;i<period_T;i++){
+        vector<struct X> tmp;
+        U.push_back(tmp);
+    }
+
+
+
+
     // init type  => contagion
 }
 
@@ -74,4 +91,13 @@ double Graph::get_edge_prob(struct node* u, struct node* v){
         }
     }
     return 0;
+}
+
+void Graph::push_U(struct X x){
+    U[x.t].push_back(x);
+    for(size_t n=0;n<x.D.size();n++){
+        if(x.lv > N[x.D[n]]->q_level){
+            N[x.D[n]]->q_level = x.lv;
+        }
+    }
 }

@@ -12,6 +12,7 @@ class Graph{
         double get_contagion(int type);
         void print_node();
         double get_edge_prob(struct node* u, struct node* v);
+        void push_U(struct X x);
 
         int V=3, E=2;
         vector<struct node*> N;
