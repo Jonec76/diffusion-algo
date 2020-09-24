@@ -104,11 +104,11 @@ void tmp_push_back(vector<vector<struct node*>*> from, vector<vector<struct node
 }
 
 bool remove_edge(struct node* v, struct node* u){
-    printf("v: %d, neighbor_u: %d", v->id, u->id);
+    // printf("v: %d, neighbor_u: %d", v->id, u->id);
     int q_max_level = max(v->q_level, u->q_level);
     double remove_p = level_table[q_max_level].remove_p;
     double r = (rand() % 100)/100.0;
-    cout<<"remove_edge_p: "<<remove_p<<" < "<<r<<endl;
+    // cout<<"remove_edge_p: "<<remove_p<<" < "<<r<<endl;
     if(remove_p < r)
         return false;
     else
@@ -146,8 +146,8 @@ double q_t(vector<struct X> X_t, int V, vector<struct node*>& N) {
     for(size_t i=0;i<X_t.size();i++){ // each X
         for(size_t j=0;j<X_t[i].D.size();j++){ // each node of X.D
             q_node = X_t[i].D[j];
-            printf(choose_table[q_node] ? "true\n" : "false\n");
-            printf("q: %d\n", q_node);
+            // printf(choose_table[q_node] ? "true\n" : "false\n");
+            // printf("q: %d\n", q_node);
             if(!choose_table[q_node]){
                 choose_table[q_node] = true;
                 switch (N[q_node]->stage){
@@ -169,7 +169,7 @@ double q_t(vector<struct X> X_t, int V, vector<struct node*>& N) {
             }
         }
     }
-    printf("s:%d, i:%d, r:%d\n", s_ctr_xt, i_ctr_xt, r_ctr_xt);
+    // printf("s:%d, i:%d, r:%d\n", s_ctr_xt, i_ctr_xt, r_ctr_xt);
     return (w_S * s_ctr_xt) + (w_I * i_ctr_xt) + (w_R * r_ctr_xt);
 }
 
