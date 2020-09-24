@@ -7,14 +7,13 @@ using namespace std;
 
 double diffusion(vector<vector<struct X>> Strategy, int sam_size, Graph& g){
     long double f = 0;
-    int param_c;
+    srand(time(0));
     for(int i=0;i<sample_size;i++){
         vector<struct node*>susceptible, infected, ailing, threatened, recovered, dead;
         vector<vector<struct node*>*> total_group{&infected, &ailing, &threatened, &dead, &recovered}; 
         vector<vector<struct node*>*> all_group{&susceptible, &infected, &ailing, &threatened, &dead, &recovered}; 
         susceptible = g.N;
         
-        srand(time(0));
 
         for(int j=0;j<g.V;j++){ // Init stage
             g.N[j]->stage = Stage::susceptible;
