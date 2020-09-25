@@ -19,7 +19,7 @@
 
 #define budget 10
 #define U_LENGTH 4
-#define out_of_cost -1
+#define out_of_cost -2
 #define sample_size 1
 #define has_in_set -1
 

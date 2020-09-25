@@ -3,8 +3,8 @@ CFLAGS += -O2
 
 .PHONY : *.o
 
-all: diff_func.o diffusion.o graph.o greedy.o
-	g++ -o main main.cpp diff_func.o diffusion.o graph.o greedy.o $(CFLAGS) -std=c++11
+all: diff_func.o diffusion.o graph.o greedy.o greedy_func.o
+	g++ -o main main.cpp diff_func.o diffusion.o graph.o greedy.o greedy_func.o $(CFLAGS) -std=c++11
 
 graph.o:
 	g++ -c graph.cpp $(CFLAGS) -std=c++11
