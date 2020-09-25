@@ -13,6 +13,7 @@ class Graph{
         void print_node();
         double get_edge_prob(struct node* u, struct node* v);
         void push_U(struct X x);
+        void set_node_lv(vector<struct X> x_t);
 
         int V=3, E=2;
         vector<struct node*> N;

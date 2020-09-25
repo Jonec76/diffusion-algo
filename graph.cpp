@@ -95,9 +95,17 @@ double Graph::get_edge_prob(struct node* u, struct node* v){
 
 void Graph::push_U(struct X x){
     U[x.t].push_back(x);
-    for(size_t n=0;n<x.D.size();n++){
-        if(x.lv > N[x.D[n]]->q_level){
-            N[x.D[n]]->q_level = x.lv;
+}
+
+void Graph::set_node_lv(vector<struct X> x_t){
+    for(size_t i=0;i<V;i++){
+        N[i]->q_level = q_free;
+    }
+    for(size_t i=0;i<x_t.size();i++){
+        for(size_t n=0;n<x_t[i].D.size();n++){
+            if(x_t[i].lv > N[x_t[i].D[n]]->q_level){
+                N[x_t[i].D[n]]->q_level = x_t[i].lv;
+            }
         }
     }
 }

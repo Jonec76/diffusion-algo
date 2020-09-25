@@ -32,6 +32,8 @@ double diffusion(vector<vector<struct X>> Strategy, int sam_size, Graph& g){
         vector<struct node*> tmp_susceptible, tmp_infected, tmp_ailing, tmp_threatened, tmp_recovered, tmp_dead;
         vector<vector<struct node*>*> tmp_group{&tmp_infected, &tmp_ailing, &tmp_threatened, &tmp_dead, &tmp_recovered};// Shall align the order of total_group 
         for(int t=0;t<period_T;t++){// Quarantine
+            g.set_node_lv(Strategy[t]);
+            // ====check lv of overlap node (g.N[i]->q_level)===";
             for(size_t i=0;i<positive_group.size();i++){ // infected, ailing, threatened
                 for(size_t j=0;j<positive_group[i]->size();j++){ // node of each group
                     struct node* positive_v = positive_group[i]->at(j);
