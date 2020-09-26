@@ -14,7 +14,7 @@ double diffusion(vector<vector<struct X>> Strategy, int sam_size, Graph& g){
         vector<vector<struct node*>*> all_group{&susceptible, &infected, &ailing, &threatened, &dead, &recovered}; 
         susceptible = g.N;
         
-        for(int j=0;j<g.V;j++){ // Init stage
+        for(size_t j=0;j<g.V;j++){ // Init stage
             g.N[j]->stage = Stage::susceptible;
             double r = (rand() % 100)/100.0; //here: 0;
             double s_i = g.N[j]->params.relative * g.N[j]->params.contagion;

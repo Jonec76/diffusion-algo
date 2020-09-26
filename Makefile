@@ -9,8 +9,8 @@ all: diff_func.o diffusion.o graph.o greedy.o greedy_func.o
 graph.o:
 	g++ -c graph.cpp $(CFLAGS) -std=c++11
 
-diffusion.o:diffusion.cpp diff_func.o
-	g++ -c diffusion.cpp diff_func.o $(CFLAGS) -std=c++11
+diffusion.o:diffusion.cpp 
+	g++ -c diffusion.cpp $(CFLAGS) -std=c++11
 
 diff_func.o:diff_func.cpp diff_func.h 
 	g++ -c diff_func.cpp $(CFLAGS) -std=c++11

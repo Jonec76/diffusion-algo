@@ -31,7 +31,7 @@ double get_group_cost(vector<vector<struct X>>& group){
 }
 
 
-void calc_baseline(Graph& g, vector<vector<struct X>>& A, double prev_best_A, double cost_A, double* diff_baseline_table[U_LENGTH], bool X_in_set_A[U_LENGTH], int sam_size){
+void calc_baseline(Graph& g, vector<vector<struct X>>& A, double prev_best_A, double cost_A, double* diff_baseline_table[], bool X_in_set_A[], int sam_size){
     int one_dim_idx=0;
     for(size_t i=0;i<g.U.size();i++){ // each X_t in U;
         for(size_t j=0;j<g.U[i].size();j++){ // each X in X_t
@@ -55,7 +55,7 @@ void calc_baseline(Graph& g, vector<vector<struct X>>& A, double prev_best_A, do
     }
 }
 
-void PSPD(Graph& g, vector<vector<struct X>>& A, double* diff_baseline_table[U_LENGTH], bool* X_in_set_A[U_LENGTH], double* prev_best_A){
+void PSPD(Graph& g, vector<vector<struct X>>& A, double* diff_baseline_table[], bool* X_in_set_A[], double* prev_best_A){
     struct X best_X;
     int one_dim_idx=0;
     double max_value = -1;
@@ -71,7 +71,6 @@ void PSPD(Graph& g, vector<vector<struct X>>& A, double* diff_baseline_table[U_L
 
             double denominator = (level_table[u_X.lv].phi_cost * u_X.cost);
             assert(denominator != 0);
-            // printf("max value: %f\n", max_value);
             if((baseline_value / denominator) > max_value){
                 best_X = u_X;
                 max_one_dim_idx = one_dim_idx;
@@ -87,10 +86,9 @@ void PSPD(Graph& g, vector<vector<struct X>>& A, double* diff_baseline_table[U_L
     // TODO: Candidate set
 }   
 
-bool has_candidate(double* diff_baseline_table){
+bool has_candidate(double* diff_baseline_table, int U_LENGTH){
     bool stop = true;
     for(int i=0;i<U_LENGTH;i++){
-        // cout<<diff_baseline_table[i]<<" ";
         stop &= (diff_baseline_table[i] < 0);
     }
     return !stop;

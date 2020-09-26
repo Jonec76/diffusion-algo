@@ -14,8 +14,8 @@ class Graph{
         double get_edge_prob(struct node* u, struct node* v);
         void push_U(struct X x);
         void set_node_lv(vector<struct X> x_t);
-        void init_graph(int V_, int E_);
-        int V, E;
+        void init_graph(int V_, int E_, int U_LENGTH_);
+        size_t V, E, U_LENGTH;
         vector<struct node*> N;
         vector<vector<struct edge> > adj;
         vector<vector<struct X> > U;

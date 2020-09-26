@@ -10,16 +10,17 @@ Graph::~Graph(){
     }
 }
 
-void Graph::init_graph(int V_, int E_){
+void Graph::init_graph(int V_, int E_, int U_LENGTH_){
     V = V_;
     E = E_;
+    U_LENGTH = U_LENGTH_;
     // Init each node
-    for(int i=0;i<V;i++){ 
+    for(size_t i=0;i<V;i++){ 
         vector<struct edge> tmp_e;
         adj.push_back(tmp_e);
     }
     // Init U
-    for(int i=0;i<period_T;i++){
+    for(size_t i=0;i<period_T;i++){
         vector<struct X> tmp;
         U.push_back(tmp);
     }

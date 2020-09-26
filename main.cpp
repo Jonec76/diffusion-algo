@@ -10,7 +10,7 @@ using namespace std;
 
 void init_node(Graph& g, vector<char*>& input_line);
 void init_edge(Graph& g, vector<char*>& input_line);
-void init_group(Graph& g, vector<char*>& input_line);
+void init_strategy(Graph& g, vector<char*>& input_line);
 void get_split_data(vector<char*>& input_line, char* data, char data_delim[]);
 void create_graph(Graph &g, const char* GRAPH_FILE);
 void create_quarantine_strategy(Graph& g, const char* GROUP_FILE);
@@ -22,10 +22,7 @@ vector<struct el> level_table = {el0, el1, el2, el3};
 int main() {
     Graph g;
     const char* GRAPH_FILE = "./covid_data/4/graph.txt";
-    const char* GROUP_FILE = "./covid_data/4/group.txt";
     create_graph(g, GRAPH_FILE);
-    create_quarantine_strategy(g, GROUP_FILE);
-    
     greedy_algo(g);
 }
 
@@ -49,13 +46,12 @@ void init_edge(Graph& g, vector<char*>& input_line){
     g.addEdge(atoi(input_line[0]), atoi(input_line[1]), atoi(input_line[2]));
 }
 
-void init_group(Graph& g, vector<char*>& input_line){
+void init_strategy(Graph& g, vector<char*>& input_line){
     struct X x;
     x.t = atoi(input_line[0]);
     x.cost = atoi(input_line[1]);
     x.lv = atoi(input_line[2]);
     x.eta = atoi(input_line[3]);
-    char *line = NULL;
     char delim[] = ",";
     char *token = strtok(input_line[4], delim);
     while (token) {
@@ -65,7 +61,7 @@ void init_group(Graph& g, vector<char*>& input_line){
     g.U[x.t].push_back(x);
 }
 
-void get_split_data(vector<char*>& input_line, char* data, char data_delim[]){
+void get_split_data(vector<char*>& input_line, char* data, char const data_delim[]){
     char *token = strtok(data, data_delim);
     while (token) {
         input_line.push_back(token);
@@ -96,7 +92,8 @@ void create_graph(Graph &g, const char* GRAPH_FILE) {
             get_split_data(input_line, data, ",");
             int V=atoi(input_line[0]);
             int E=atoi(input_line[1]); //input_line[2]: U length 
-            g.init_graph(V, E);
+            int U_LENGTH = atoi(input_line[2]);
+            g.init_graph(V, E, U_LENGTH);
         }else if(strcmp(type, "e") == 0){
             get_split_data(input_line, data, ",");
             init_edge(g, input_line);
@@ -105,44 +102,7 @@ void create_graph(Graph &g, const char* GRAPH_FILE) {
             init_node(g, input_line);
         }else if(strcmp(type, "X") == 0){
             get_split_data(input_line, data, "_");
-            init_group(g, input_line); // TODO
-        }else{
-            cout<<"wrong input"<<endl;
-        }
-    }
-    fclose(fp_graph);
-    if (line) free(line);
-}
-
-void create_quarantine_strategy(Graph& g, const char* GROUP_FILE){
-    FILE *fp_graph = fopen(GROUP_FILE, "r");
-    char *line = NULL;
-    size_t len = 0;
-    char type_delim[] = " ";
-    char data_delim[] = ",";
-    if (fp_graph == NULL) exit(EXIT_FAILURE);
-    
-    while ((getline(&line, &len, fp_graph)) != -1) {
-        char* type = strtok(line, type_delim);
-        char* data = strtok(NULL, type_delim);
-        
-        vector<char*>input_line;
-        char *token = strtok(data, data_delim);
-        while (token) {
-            input_line.push_back(token);
-            token = strtok(NULL, data_delim);
-        }
-
-        if(strcmp(type, "g") == 0){
-            int V=atoi(input_line[0]);
-            int E=atoi(input_line[1]);
-            g.init_graph(V, E);
-        }else if(strcmp(type, "e") == 0){
-            init_edge(g, input_line);
-        }else if(strcmp(type, "n") == 0){
-            init_node(g, input_line);
-        }else if(strcmp(type, "X") == 0){
-            init_group(g, input_line);
+            init_strategy(g, input_line); // TODO
         }else{
             cout<<"wrong input"<<endl;
         }
