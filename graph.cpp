@@ -4,7 +4,7 @@ Graph::Graph(){
     
 }
 
-Graph::~Graph(){
+void Graph::free_graph(){
     for(size_t i=0;i<N.size();i++){
         free(N[i]);
     }

@@ -27,8 +27,10 @@ const char* BASELINE_FILE = "./result/baseline.txt";
 int main() {
     Graph g;
     const char* GRAPH_FILE = "./covid_data/4/graph.txt";
-    create_graph(g, GRAPH_FILE);
+    const char* TSMC_FILE = "./covid_data/tsmc_nyc/graph_NYC.txt";
+    create_graph(g, TSMC_FILE);
     greedy_algo(g);
+    g.free_graph();
 }
 
 

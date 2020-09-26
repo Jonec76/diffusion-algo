@@ -1,129 +1,48 @@
 
-
-baseline:       152.389814
-F(AU{X}, T):    152.389814
+baseline:       385.583808
+F(AU{X}, T):    385.583808
 F(A, T):        0.000000
-X_t_id_OneDim:  8_1_81
-A Strategies:   8_1 
+X_t_id_OneDim:  8_2_82
+A Strategies:   8_2 
 
-baseline:       144.380112
-F(AU{X}, T):    296.769926
-F(A, T):        152.389814
-X_t_id_OneDim:  7_4_74
-A Strategies:   7_4 8_1 
+baseline:       385.840650
+F(AU{X}, T):    771.424458
+F(A, T):        385.583808
+X_t_id_OneDim:  9_6_96
+A Strategies:   8_2 9_6 
 
-baseline:       154.271129
-F(AU{X}, T):    451.041055
-F(A, T):        296.769926
-X_t_id_OneDim:  5_2_52
-A Strategies:   5_2 7_4 8_1 
+baseline:       386.930219
+F(AU{X}, T):    1158.354677
+F(A, T):        771.424458
+X_t_id_OneDim:  7_3_73
+A Strategies:   7_3 8_2 9_6 
 
-baseline:       165.051942
-F(AU{X}, T):    616.092997
-F(A, T):        451.041055
-X_t_id_OneDim:  4_9_49
-A Strategies:   4_9 5_2 7_4 8_1 
-
-baseline:       133.987643
-F(AU{X}, T):    750.080640
-F(A, T):        616.092997
-X_t_id_OneDim:  3_9_39
-A Strategies:   3_9 4_9 5_2 7_4 8_1 
-
-baseline:       173.373178
-F(AU{X}, T):    923.453818
-F(A, T):        750.080640
-X_t_id_OneDim:  2_9_29
-A Strategies:   2_9 3_9 4_9 5_2 7_4 8_1 
-
-baseline:       194.638850
-F(AU{X}, T):    1118.092668
-F(A, T):        923.453818
-X_t_id_OneDim:  0_0_0
-A Strategies:   0_0 2_9 3_9 4_9 5_2 7_4 8_1 
-
-baseline:       152.976140
-F(AU{X}, T):    1271.068807
-F(A, T):        1118.092668
-X_t_id_OneDim:  1_9_19
-A Strategies:   0_0 1_9 2_9 3_9 4_9 5_2 7_4 8_1 
-
-baseline:       167.727233
-F(AU{X}, T):    1438.796041
-F(A, T):        1271.068807
-X_t_id_OneDim:  6_8_68
-A Strategies:   0_0 1_9 2_9 3_9 4_9 5_2 6_8 7_4 8_1 
-[ Iter: 0 ]
-[ Iter: 1 ]
-[ Iter: 2 ]
-[ Iter: 3 ]
-[ Iter: 4 ]
-[ Iter: 5 ]
-[ Iter: 6 ]
-[ Iter: 7 ]
-[ Iter: 8 ]
-[ Iter: 9 ]
-
-baseline:       156.308316
-F(AU{X}, T):    156.308316
+baseline:       369.567453
+F(AU{X}, T):    369.567453
 F(A, T):        0.000000
-X_t_id_OneDim:  7_4_74
-A Strategies:   7_4 
+X_t_id_OneDim:  9_6_96
+A Strategies:   9_6 
 
-baseline:       153.059694
-F(AU{X}, T):    309.368010
-F(A, T):        156.308316
-X_t_id_OneDim:  8_1_81
-A Strategies:   7_4 8_1 
+baseline:       359.287042
+F(AU{X}, T):    728.854494
+F(A, T):        369.567453
+X_t_id_OneDim:  8_7_87
+A Strategies:   8_7 9_6 
 
-baseline:       150.584118
-F(AU{X}, T):    459.952128
-F(A, T):        309.368010
-X_t_id_OneDim:  5_2_52
-A Strategies:   5_2 7_4 8_1 
+baseline:       363.809868
+F(AU{X}, T):    1092.664362
+F(A, T):        728.854494
+X_t_id_OneDim:  7_3_73
+A Strategies:   7_3 8_7 9_6 
 
-baseline:       166.844542
-F(AU{X}, T):    626.796670
-F(A, T):        459.952128
+baseline:       358.002346
+F(AU{X}, T):    1450.666709
+F(A, T):        1092.664362
+X_t_id_OneDim:  5_8_58
+A Strategies:   5_8 7_3 8_7 9_6 
+
+baseline:       411.432373
+F(AU{X}, T):    1862.099082
+F(A, T):        1450.666709
 X_t_id_OneDim:  4_9_49
-A Strategies:   4_9 5_2 7_4 8_1 
-
-baseline:       154.157124
-F(AU{X}, T):    780.953794
-F(A, T):        626.796670
-X_t_id_OneDim:  3_9_39
-A Strategies:   3_9 4_9 5_2 7_4 8_1 
-
-baseline:       165.311465
-F(AU{X}, T):    946.265259
-F(A, T):        780.953794
-X_t_id_OneDim:  2_9_29
-A Strategies:   2_9 3_9 4_9 5_2 7_4 8_1 
-
-baseline:       143.153281
-F(AU{X}, T):    1089.418540
-F(A, T):        946.265259
-X_t_id_OneDim:  0_3_3
-A Strategies:   0_3 2_9 3_9 4_9 5_2 7_4 8_1 
-
-baseline:       184.619478
-F(AU{X}, T):    1274.038019
-F(A, T):        1089.418540
-X_t_id_OneDim:  1_2_12
-A Strategies:   0_3 1_2 2_9 3_9 4_9 5_2 7_4 8_1 
-
-baseline:       156.053316
-F(AU{X}, T):    1430.091335
-F(A, T):        1274.038019
-X_t_id_OneDim:  9_0_90
-A Strategies:   0_3 1_2 2_9 3_9 4_9 5_2 7_4 8_1 9_0 
-[ Iter: 0 ] 140723669.000000
-[ Iter: 1 ] 0.000000
-[ Iter: 2 ] 0.000000
-[ Iter: 3 ] 0.000000
-[ Iter: 4 ] 0.000000
-[ Iter: 5 ] 0.000000
-[ Iter: 6 ] 0.000000
-[ Iter: 7 ] 0.000000
-[ Iter: 8 ] 0.000000
-[ Iter: 9 ] 0.000000
+A Strategies:   4_9 5_8 7_3 8_7 9_6 

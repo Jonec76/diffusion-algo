@@ -21,9 +21,11 @@
 #define out_of_cost -2
 #define sample_size 1
 #define has_in_set -1
+#define threads 3
 
 #include<iostream>
 #include<vector>
+#include "graph.h"
 using namespace std;
 
 

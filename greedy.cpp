@@ -8,7 +8,7 @@ using namespace std;
 
 extern const char* BASELINE_FILE;
 
-vector<vector<struct X> > greedy_algo(Graph& g){
+vector<vector<struct X> > greedy_algo(Graph g){
     printf("Start greedy algorithm ..\n\n");
     vector<vector<struct X>> A, B, S;
     init_strategy(A);

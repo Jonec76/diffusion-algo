@@ -7,7 +7,9 @@
 #include "graph.h"
 
 using namespace std;
-double diffusion(vector<vector<struct X> > Strategy, int , Graph& g);
+void diffusion(vector<vector<struct X>> Strategy, Graph g, double* f, size_t num_threads);
+void *parallel(double* value, size_t num_threads, vector<vector<struct X>> &Strategy, Graph g);
+
 double get_contagion(int);
 void migrate(vector<node*>*, vector<node*>*, struct node*);
 void printVec(vector<struct node>);

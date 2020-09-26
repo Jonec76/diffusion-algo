@@ -1,50 +1,100 @@
 #include <iostream>
 #include <vector>
 #include <stdlib.h>
+#include <pthread.h>
+#include<mutex>
 #include "graph.h"
 #include "diff_func.h"
 using namespace std;
 
-double diffusion(vector<vector<struct X>> Strategy, int sam_size, Graph& g){
-    long double f = 0;
-    srand(time(0));
-    for(int i=0;i<sample_size;i++){
-        vector<struct node*>susceptible, infected, ailing, threatened, recovered, dead;
-        vector<vector<struct node*>*> total_group{&infected, &ailing, &threatened, &dead, &recovered}; 
-        vector<vector<struct node*>*> all_group{&susceptible, &infected, &ailing, &threatened, &dead, &recovered}; 
-        susceptible = g.N;
-        
-        for(size_t j=0;j<g.V;j++){ // Init stage
-            g.N[j]->stage = Stage::susceptible;
-            double r = (rand() % 100)/100.0; //here: 0;
-            double s_i = g.N[j]->params.relative * g.N[j]->params.contagion;
-            // cout<<"node_p: "<<s_i<<" < "<<r<<endl;
-            if(r < s_i){
-                g.N[j]->stage = Stage::infected;
-                migrate(&susceptible, &infected, g.N[j]);
-            }
-        }
-        vector<vector<struct node*>*> positive_group{&infected, &ailing, &threatened};
-        vector<vector<struct node*>*> health_group{&susceptible, &infected, &recovered};
-        
-        
-        vector<struct node*> tmp_susceptible, tmp_infected, tmp_ailing, tmp_threatened, tmp_recovered, tmp_dead;
-        vector<vector<struct node*>*> tmp_group{&tmp_infected, &tmp_ailing, &tmp_threatened, &tmp_dead, &tmp_recovered};// Shall align the order of total_group 
-        for(int t=0;t<period_T;t++){// Quarantine
-            if(Strategy[t].size() == 0)
-                continue;
-            g.set_node_lv(Strategy[t]);
-            // ====check lv of overlap node (g.N[i]->q_level)===";
-            for(size_t i=0;i<positive_group.size();i++){ // infected, ailing, threatened
-                for(size_t j=0;j<positive_group[i]->size();j++){ // node of each group
-                    struct node* positive_v = positive_group[i]->at(j);
-                    infection_process(g, susceptible, tmp_infected, positive_v, Strategy[t]);
-                    self_transmission_process(positive_group, tmp_group, positive_v);
-                }
-            }
-            tmp_push_back(tmp_group, total_group);
-            f += objective_at_t(health_group, Strategy[t], g.V, g.N);
+mutex mu;
+struct Param{
+    vector<vector<struct X>> Strategy;
+    Graph g;
+    size_t num_threads;
+    double f;
+};
+
+void *threaded_task(void *p) {
+    Param* param = (Param*)p;
+    vector<vector<struct X>> Strategy = param->Strategy;
+    Graph g = param->g;
+    double* f = &(param->f);
+    size_t num_threads = param->num_threads;
+    diffusion(Strategy, g, f, num_threads);
+    pthread_exit((void *)p);
+}
+
+void *parallel(double* value, size_t num_threads, vector<vector<struct X>> &Strategy, Graph g) {
+    pthread_attr_t attr;
+    pthread_t thread[num_threads];
+    double f = 0;
+    void *status;
+    
+    Param param;
+    param.Strategy = Strategy;
+    param.g = g;
+    param.num_threads = num_threads;
+    param.f = f;
+
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+    for (size_t t = 0; t < num_threads; t++) {
+        int rc = pthread_create(&thread[t], &attr, threaded_task, (void *)&param);
+        if (rc) {
+            printf("ERROR: return code from pthread_create() is %d\n", rc);
+            exit(-1);
         }
     }
-    return f/(double)sample_size;
+    pthread_attr_destroy(&attr);
+    for (size_t t = 0; t < num_threads; t++) {
+        int rc = pthread_join(thread[t], &status);
+        if (rc) {
+            printf("ERROR; return code from pthread_join() is %d\n", rc);
+            exit(-1);
+        }
+    }
+    *value = param.f;
+}
+
+void diffusion(vector<vector<struct X>> Strategy, Graph g, double* f, size_t num_threads){
+    double thread_f = 0;
+    srand(time(0));
+    vector<struct node*>susceptible, infected, ailing, threatened, recovered, dead;
+    vector<vector<struct node*>*> total_group{&infected, &ailing, &threatened, &dead, &recovered}; 
+    vector<vector<struct node*>*> all_group{&susceptible, &infected, &ailing, &threatened, &dead, &recovered}; 
+    susceptible = g.N;
+    
+    for(size_t j=0;j<g.V;j++){ // Init stage
+        g.N[j]->stage = Stage::susceptible;
+        double r = (rand() % 100)/100.0; //here: 0;
+        double s_i = g.N[j]->params.relative * g.N[j]->params.contagion;
+        // cout<<"node_p: "<<s_i<<" < "<<r<<endl;
+        if(r < s_i){
+            g.N[j]->stage = Stage::infected;
+            migrate(&susceptible, &infected, g.N[j]);
+        }
+    }
+    vector<vector<struct node*>*> positive_group{&infected, &ailing, &threatened};
+    vector<vector<struct node*>*> health_group{&susceptible, &infected, &recovered};
+    vector<struct node*> tmp_susceptible, tmp_infected, tmp_ailing, tmp_threatened, tmp_recovered, tmp_dead;
+    vector<vector<struct node*>*> tmp_group{&tmp_infected, &tmp_ailing, &tmp_threatened, &tmp_dead, &tmp_recovered};// Shall align the order of total_group 
+    for(int t=0;t<period_T;t++){// Quarantine
+        if(Strategy[t].size() == 0)
+            continue;
+        g.set_node_lv(Strategy[t]);
+        // ====check lv of overlap node (g.N[i]->q_level)===";
+        for(size_t i=0;i<positive_group.size();i++){ // infected, ailing, threatened
+            for(size_t j=0;j<positive_group[i]->size();j++){ // node of each group
+                struct node* positive_v = positive_group[i]->at(j);
+                infection_process(g, susceptible, tmp_infected, positive_v, Strategy[t]);
+                self_transmission_process(positive_group, tmp_group, positive_v);
+            }
+        }
+        tmp_push_back(tmp_group, total_group);
+        thread_f += objective_at_t(health_group, Strategy[t], g.V, g.N);
+    }
+    mu.lock();
+    *f += thread_f/num_threads;
+    mu.unlock();
 }

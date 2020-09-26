@@ -1,10 +1,10 @@
-CFLAGS = -g -Wall -B
+CFLAGS = -g -Wall -B 
 CFLAGS += -O2
 
 .PHONY : *.o
 
 all: diff_func.o diffusion.o graph.o greedy.o greedy_func.o
-	g++ -o main main.cpp diff_func.o diffusion.o graph.o greedy.o greedy_func.o $(CFLAGS) -std=c++11
+	g++ -o  main main.cpp diff_func.o diffusion.o graph.o greedy.o greedy_func.o $(CFLAGS) -std=c++11 -lpthread -lm 
 
 graph.o:
 	g++ -c graph.cpp $(CFLAGS) -std=c++11

@@ -32,7 +32,7 @@ double get_group_cost(vector<vector<struct X>>& group){
 }
 
 
-void calc_baseline(Graph& g, vector<vector<struct X>>& A, double prev_best_A, double cost_A, double* diff_baseline_table[], bool X_in_set_A[], int sam_size){
+void calc_baseline(Graph g, vector<vector<struct X>> A, double prev_best_A, double cost_A, double* diff_baseline_table[], bool X_in_set_A[], int sam_size){
     int one_dim_idx=0;
     for(size_t i=0;i<g.U.size();i++){ // each X_t in U;
         for(size_t j=0;j<g.U[i].size();j++){ // each X in X_t
@@ -50,7 +50,10 @@ void calc_baseline(Graph& g, vector<vector<struct X>>& A, double prev_best_A, do
                 continue;
             }
             tmpA[u_X.t].push_back(u_X);
-            (*diff_baseline_table)[one_dim_idx] = diffusion(tmpA, sample_size, g) - prev_best_A;
+            double tmpA_value = 0;
+            parallel(&tmpA_value, threads, tmpA, g);
+            (*diff_baseline_table)[one_dim_idx] =  tmpA_value - prev_best_A;
+            // (*diff_baseline_table)[one_dim_idx] = diffusion(tmpA, g) - prev_best_A;
             one_dim_idx++;
         }
     }
