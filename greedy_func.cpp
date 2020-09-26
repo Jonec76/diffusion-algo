@@ -8,6 +8,7 @@
 using namespace std;
 
 extern vector<struct el>level_table;
+extern const char* BASELINE_FILE ;
 
 double get_X_cost(struct X x_t){
     return level_table[x_t.lv].phi_cost * x_t.cost;
@@ -84,22 +85,18 @@ void PSPD(Graph& g, vector<vector<struct X>>& A, double* diff_baseline_table[], 
     A[best_X.t].push_back(best_X);
 
     FILE * pFile;
-    int n;
-    char name [100];
-    // pFile = fopen ("output/baseline.txt","w");
-    // fprintf (pFile, "\nbaseline: %f\nF(A, T): %f\nbaseline: %f\nX_t_id_OneDim: %d_%d_%d\n", (*diff_baseline_table)[max_one_dim_idx],*prev_best_A, best_X.t, best_X.id, max_one_dim_idx);
-    printf ("\n%-15s %f\n%-15s %f\n%-15s %f\n%-15s %d_%d_%d\n%-15s ","baseline: ",  (*diff_baseline_table)[max_one_dim_idx], "F(AU{X}, T):", ((*diff_baseline_table)[max_one_dim_idx] + *prev_best_A), "F(A, T):", *prev_best_A, "X_t_id_OneDim:", best_X.t, best_X.id, max_one_dim_idx, "A Strategies:");
+    pFile = fopen (BASELINE_FILE, "a");
+    fprintf (pFile, "\n%-15s %f\n%-15s %f\n%-15s %f\n%-15s %d_%d_%d\n%-15s ","baseline: ",  (*diff_baseline_table)[max_one_dim_idx], "F(AU{X}, T):", ((*diff_baseline_table)[max_one_dim_idx] + *prev_best_A), "F(A, T):", *prev_best_A, "X_t_id_OneDim:", best_X.t, best_X.id, max_one_dim_idx, "A Strategies:");
     int tmp_idx = 0;
     for(size_t i=0;i<A.size();i++){
         for(size_t j=0;j<A[i].size();j++){
-            // fprintf (pFile, "\n %d_%d_%d\n", A[i][j].t, A[i][j].id, tmp_idx);
-            printf ( "%d_%d ", A[i][j].t, A[i][j].id);
+            fprintf (pFile, "%d_%d ", A[i][j].t, A[i][j].id);
             tmp_idx++;
         }
     }
-    printf("\n");
+    fprintf(pFile, "\n");
     
-    // fclose (pFile);
+    fclose (pFile);
 
     (*X_in_set_A)[max_one_dim_idx] = true;
     *prev_best_A = *prev_best_A + (*diff_baseline_table)[max_one_dim_idx];
