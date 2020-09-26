@@ -19,7 +19,7 @@ vector<vector<struct X> > greedy_algo(Graph& g){
     memset(diff_baseline_table, 0, g.U_LENGTH * sizeof(double)); // for clearing previous record
 
     while((cost_A < budget) && has_candidate(diff_baseline_table, g.U_LENGTH)){
-        cout<<"\n======"<<cost_A<<endl;
+        cout<<"\n======"<<endl;
         vector<struct X> C;
         calc_baseline(g, A, prev_best_A, cost_A, &diff_baseline_table, X_in_set_A, sample_size);
         PSPD(g, A, &diff_baseline_table, &X_in_set_A, &prev_best_A);

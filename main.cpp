@@ -52,6 +52,7 @@ void init_strategy(Graph& g, vector<char*>& input_line){
     x.cost = atoi(input_line[1]);
     x.lv = atoi(input_line[2]);
     x.eta = atoi(input_line[3]);
+    x.id = g.U[x.t].size();
     char delim[] = ",";
     char *token = strtok(input_line[4], delim);
     while (token) {
