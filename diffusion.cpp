@@ -14,7 +14,6 @@ double diffusion(vector<vector<struct X>> Strategy, int sam_size, Graph& g){
         vector<vector<struct node*>*> all_group{&susceptible, &infected, &ailing, &threatened, &dead, &recovered}; 
         susceptible = g.N;
         
-
         for(int j=0;j<g.V;j++){ // Init stage
             g.N[j]->stage = Stage::susceptible;
             double r = (rand() % 100)/100.0; //here: 0;
@@ -32,6 +31,8 @@ double diffusion(vector<vector<struct X>> Strategy, int sam_size, Graph& g){
         vector<struct node*> tmp_susceptible, tmp_infected, tmp_ailing, tmp_threatened, tmp_recovered, tmp_dead;
         vector<vector<struct node*>*> tmp_group{&tmp_infected, &tmp_ailing, &tmp_threatened, &tmp_dead, &tmp_recovered};// Shall align the order of total_group 
         for(int t=0;t<period_T;t++){// Quarantine
+            if(Strategy[t].size() == 0)
+                continue;
             g.set_node_lv(Strategy[t]);
             // ====check lv of overlap node (g.N[i]->q_level)===";
             for(size_t i=0;i<positive_group.size();i++){ // infected, ailing, threatened
@@ -42,8 +43,6 @@ double diffusion(vector<vector<struct X>> Strategy, int sam_size, Graph& g){
                 }
             }
             tmp_push_back(tmp_group, total_group);
-            // cout<<"\nafter infection & self\n";
-            // print_group(all_group);
             f += objective_at_t(health_group, Strategy[t], g.V, g.N);
         }
     }

@@ -175,7 +175,7 @@ double q_t(vector<struct X> X_t, int V, vector<struct node*>& N) {
 
 double M_t(vector<struct X> X_t) {
     double sum = 0;
-    for (int i = 0; i < X_t.size(); i++) {
+    for (size_t i = 0; i < X_t.size(); i++) {
         sum += (X_t[i].eta == eta_default? 2.0 / (double)X_t[i].D.size():X_t[i].eta);  // Should set eta value as 2/|D| when there is no default value.
     }
     return sum - sqrt(sum);

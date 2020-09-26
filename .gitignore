@@ -1,4 +1,6 @@
-main*
+test_graph.cpp
+main
+*.dSYM
 *.o
 .vscode
 /covid_data

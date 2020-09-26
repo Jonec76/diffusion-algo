@@ -15,10 +15,10 @@
 #define health_r 2
 
 #define eta_default -1
-#define period_T 2
+#define period_T 10
 
 #define budget 10
-#define U_LENGTH 4
+#define U_LENGTH 100
 #define out_of_cost -2
 #define sample_size 1
 #define has_in_set -1

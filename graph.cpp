@@ -1,46 +1,29 @@
 #include "graph.h"
 
-Graph::Graph(int V_, int E_){
+Graph::Graph(){
+    
+}
+
+Graph::~Graph(){
+    for(size_t i=0;i<N.size();i++){
+        free(N[i]);
+    }
+}
+
+void Graph::init_graph(int V_, int E_){
     V = V_;
     E = E_;
-
     // Init each node
     for(int i=0;i<V;i++){ 
-        struct node* tmp = (struct node*)malloc(sizeof(struct node));
-        // int type=0;
-        tmp->id = i;
-        // tmp->params.contagion = get_contagion(type);
-        tmp->params.relative = 1;
-        tmp->params.contagion = 0.5;
-        tmp->params.critical = 0.5;
-        tmp->params.death = 0.5;
-        tmp->params.healing_fromA = 0.5;
-        tmp->params.healing_fromI = 0.5;
-        tmp->params.healing_fromT = 0.5;
-        tmp->params.symptom = 0.5;
-        
-        tmp->q_level = q_free;
-
         vector<struct edge> tmp_e;
         adj.push_back(tmp_e);
-        N.push_back(tmp);
     }
     // Init U
     for(int i=0;i<period_T;i++){
         vector<struct X> tmp;
         U.push_back(tmp);
     }
-
-
-
-
     // init type  => contagion
-}
-
-Graph::~Graph(){
-    for(int i=0;i<N.size();i++){
-        free(N[i]);
-    }
 }
 
 void Graph::addEdge(int u, int v, double p) {

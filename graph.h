@@ -6,7 +6,7 @@ using namespace std;
 
 class Graph{
     public:
-        Graph(int V_, int E_);
+        Graph();
         ~Graph();
         void addEdge(int u, int v, double p);
         double get_contagion(int type);
@@ -14,8 +14,8 @@ class Graph{
         double get_edge_prob(struct node* u, struct node* v);
         void push_U(struct X x);
         void set_node_lv(vector<struct X> x_t);
-
-        int V=3, E=2;
+        void init_graph(int V_, int E_);
+        int V, E;
         vector<struct node*> N;
         vector<vector<struct edge> > adj;
         vector<vector<struct X> > U;
