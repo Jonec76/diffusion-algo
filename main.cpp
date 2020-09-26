@@ -1,6 +1,9 @@
 #include <string.h>
 #include <fstream>
 #include <iostream>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <errno.h>
 #include "data.h"
 #include "diff_func.h"
 #include "graph.h"
@@ -18,6 +21,8 @@ void create_quarantine_strategy(Graph& g, const char* GROUP_FILE);
 struct X X1, X2, X3, X4;
 struct el el0 = {0, 0.5}, el1 = {0.3, 0.3}, el2 = {0.7, 0.7}, el3 = {1, 1};
 vector<struct el> level_table = {el0, el1, el2, el3};
+const char* RESULT_DIR = "result";
+const char* BASELINE_FILE = "./result/baseline.txt";
 
 int main() {
     Graph g;
@@ -80,6 +85,14 @@ void create_graph(Graph &g, const char* GRAPH_FILE) {
     FILE *fp_graph = fopen(GRAPH_FILE, "r");
     if (fp_graph == NULL) 
         exit(EXIT_FAILURE);
+    
+    DIR* dir = opendir(RESULT_DIR);
+    if (dir) {
+        closedir(dir);
+    } else{
+        if (mkdir("result", S_IRWXU|S_IRWXG|S_IROTH))
+            printf("wrong at create dir");
+    }
     
     char *line = NULL;
     size_t len = 0;
