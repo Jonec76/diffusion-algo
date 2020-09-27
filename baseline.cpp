@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <cstdlib>
 #include "diff_func.h"
 #include "algo.h"
 #include "graph.h"
@@ -14,19 +13,16 @@ int main(){
     Graph g;
     const char* GRAPH_FILE = "./covid_data/new_data/graph_4.txt";
     create_graph(g, GRAPH_FILE);
-    algo_greedy(g);
-    
+    algo_baseline(g);
 }
 
-vector<vector<struct X> > algo_greedy(Graph& g){
-    printf("Start greedy algorithm ..\n\n");
+vector<vector<struct X> > algo_baseline(Graph& g){
+    printf("Start baseline algorithm ..\n\n");
     vector<vector<struct X> > A, B, S;
     init_strategy(A);
     init_strategy(B);
-    int i=0, j=-1;
     double prev_best_A=0;
     double cost_A = get_group_cost(A);
-    double cost_B = get_group_cost(B);
     bool* X_in_set_A = (bool*) malloc(g.U_LENGTH*sizeof(bool));
     memset(X_in_set_A, false, g.U_LENGTH * sizeof(bool)); // for clearing previous record
     double* diff_baseline_table = (double*) malloc(g.U_LENGTH*sizeof(double));
@@ -37,7 +33,7 @@ vector<vector<struct X> > algo_greedy(Graph& g){
         start = clock();
         vector<struct X> C;
         calc_baseline(g, A, prev_best_A, cost_A, &diff_baseline_table, X_in_set_A, sample_size);
-        PSPD_greedy(g, A, &diff_baseline_table, &X_in_set_A, &prev_best_A);
+        PSPD_baseline(g, A, &diff_baseline_table, &X_in_set_A, &prev_best_A);
         cost_A = get_group_cost(A);
         end = clock();
         printf("[ Iter: %lu ] %f\n", iter++, (double)((end - start) / CLOCKS_PER_SEC));
@@ -46,3 +42,4 @@ vector<vector<struct X> > algo_greedy(Graph& g){
     free(diff_baseline_table);
     return S;
 }
+

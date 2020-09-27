@@ -7,30 +7,15 @@
 #include "data.h"
 #include "diff_func.h"
 #include "graph.h"
-#include "greedy.h"
+#include "init.h"
 
 using namespace std;
-
-void init_node(Graph& g, vector<char*>& input_line);
-void init_edge(Graph& g, vector<char*>& input_line);
-void init_strategy(Graph& g, vector<char*>& input_line);
-void get_split_data(vector<char*>& input_line, char* data, char data_delim[]);
-void create_graph(Graph &g, const char* GRAPH_FILE);
-void create_quarantine_strategy(Graph& g, const char* GROUP_FILE);
 
 struct X X1, X2, X3, X4;
 struct el el0 = {0, 0.5}, el1 = {0.3, 0.3}, el2 = {0.7, 0.7}, el3 = {1, 1};
 vector<struct el> level_table = {el0, el1, el2, el3};
 const char* RESULT_DIR = "result";
 const char* BASELINE_FILE = "./result/baseline.txt";
-
-int main() {
-    Graph g;
-    const char* GRAPH_FILE = "./covid_data/4/graph.txt";
-    create_graph(g, GRAPH_FILE);
-    greedy_algo(g);
-}
-
 
 void init_node(Graph& g, vector<char*>& input_line){
     struct node* n = (struct node*)malloc(sizeof(struct node));
@@ -83,8 +68,10 @@ void get_split_data(vector<char*>& input_line, char* data, char const data_delim
  */
 void create_graph(Graph &g, const char* GRAPH_FILE) {
     FILE *fp_graph = fopen(GRAPH_FILE, "r");
-    if (fp_graph == NULL) 
+    if (fp_graph == NULL) {
+        printf("Failed to open file %s.", GRAPH_FILE);
         exit(EXIT_FAILURE);
+    }
     
     DIR* dir = opendir(RESULT_DIR);
     if (dir) {
@@ -101,7 +88,6 @@ void create_graph(Graph &g, const char* GRAPH_FILE) {
         char* type = strtok(line, " ");
         char* data = strtok(NULL, " ");
         vector<char*>input_line;
-
         if(strcmp(type, "g") == 0){
             get_split_data(input_line, data, ",");
             int V=atoi(input_line[0]);

@@ -4,7 +4,6 @@
 #include <iostream>
 #include <vector>
 #include <time.h>
-#include <cstdlib>
 #include "data.h"
 #include "graph.h"
 

@@ -4,4 +4,4 @@ main
 *.o
 .vscode
 /covid_data
-/result
+result/

@@ -68,6 +68,7 @@ void Graph::print_node(){
     }
 }
 
+
 double Graph::get_edge_prob(struct node* u, struct node* v){
     for(size_t i=0;i< adj[u->id].size();i++){
         if(adj[u->id][i].neighbor == v->id){

@@ -5,7 +5,7 @@
 #include "diff_func.h"
 using namespace std;
 
-double diffusion(vector<vector<struct X>> Strategy, int sam_size, Graph& g){
+double diffusion(vector<vector<struct X> > Strategy, int sam_size, Graph& g){
     long double f = 0;
     srand(time(0));
     for(int i=0;i<sample_size;i++){

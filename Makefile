@@ -1,24 +1,15 @@
-CFLAGS = -g -Wall -B
+CFLAGS = -B -g -Wall 
 CFLAGS += -O2
+CC = g++
+.PHONY : clean
 
-.PHONY : *.o
+OBJS := init.o diff_func.o diffusion.o graph.o algo.o
+TARGETS := greedy baseline
 
-all: diff_func.o diffusion.o graph.o greedy.o greedy_func.o
-	g++ -o main main.cpp diff_func.o diffusion.o graph.o greedy.o greedy_func.o $(CFLAGS) -std=c++11
-
-graph.o:
-	g++ -c graph.cpp $(CFLAGS) -std=c++11
-
-diffusion.o:diffusion.cpp 
-	g++ -c diffusion.cpp $(CFLAGS) -std=c++11
-
-diff_func.o:diff_func.cpp diff_func.h 
-	g++ -c diff_func.cpp $(CFLAGS) -std=c++11
-
-greedy.o:
-	g++ -c greedy.cpp $(CFLAGS) -std=c++11
-	
-greedy_func.o:
-	g++ -c greedy_func.cpp $(CFLAGS) -std=c++11
+all:$(TARGETS)
+$(TARGETS): $(OBJS) greedy.cpp baseline.cpp
+	g++ -o $@ $@.cpp $(OBJS) $(CFLAGS) -std=c++11
+%.o: %.cpp %.h
+	$(CC) -o $@ -c $< $(CFLAGS) -std=c++11
 clean:
-	rm *.o main
+	rm *.o greedy baseline
