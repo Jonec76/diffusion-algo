@@ -5,10 +5,12 @@
 #include "diff_func.h"
 using namespace std;
 
+extern size_t sample_size, period_T;
+
 double diffusion(vector<vector<struct X> > Strategy, int sam_size, Graph& g){
     long double f = 0;
     srand(time(0));
-    for(int i=0;i<sample_size;i++){
+    for(size_t i=0;i<sample_size;i++){
         vector<struct node*>susceptible, infected, ailing, threatened, recovered, dead;
         vector<vector<struct node*>*> total_group{&infected, &ailing, &threatened, &dead, &recovered}; 
         vector<vector<struct node*>*> all_group{&susceptible, &infected, &ailing, &threatened, &dead, &recovered}; 
@@ -30,7 +32,7 @@ double diffusion(vector<vector<struct X> > Strategy, int sam_size, Graph& g){
         
         vector<struct node*> tmp_susceptible, tmp_infected, tmp_ailing, tmp_threatened, tmp_recovered, tmp_dead;
         vector<vector<struct node*>*> tmp_group{&tmp_infected, &tmp_ailing, &tmp_threatened, &tmp_dead, &tmp_recovered};// Shall align the order of total_group 
-        for(int t=0;t<period_T;t++){// Quarantine
+        for(size_t t=0;t<period_T;t++){// Quarantine
             if(Strategy[t].size() == 0)
                 continue;
             g.set_node_lv(Strategy[t]);

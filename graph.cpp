@@ -1,5 +1,7 @@
 #include "graph.h"
 
+extern size_t period_T;
+
 Graph::Graph(){
     
 }

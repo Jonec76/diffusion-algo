@@ -1,4 +1,4 @@
-CFLAGS = -B -g -Wall 
+CFLAGS = -B -g -Wall -std=c++11
 CFLAGS += -O2
 CC = g++
 .PHONY : clean
@@ -8,8 +8,8 @@ TARGETS := greedy baseline
 
 all:$(TARGETS)
 $(TARGETS): $(OBJS) greedy.cpp baseline.cpp
-	g++ -o $@ $@.cpp $(OBJS) $(CFLAGS) -std=c++11
-%.o: %.cpp %.h
-	$(CC) -o $@ -c $< $(CFLAGS) -std=c++11
+	g++ -o $@ $@.cpp $(OBJS) $(CFLAGS) 
+%.o: %.cpp *.h
+	$(CC) -o $@ -c $< $(CFLAGS)
 clean:
 	rm *.o greedy baseline

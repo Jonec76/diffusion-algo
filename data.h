@@ -15,11 +15,8 @@
 #define health_r 2
 
 #define eta_default -1
-#define period_T 10
 
-#define budget 10
 #define out_of_cost -2
-#define sample_size 5
 #define has_in_set -1
 
 #include<iostream>
