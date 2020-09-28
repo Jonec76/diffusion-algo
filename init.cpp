@@ -14,8 +14,12 @@ using namespace std;
 struct X X1, X2, X3, X4;
 struct el el0 = {0, 0.5}, el1 = {0.3, 0.3}, el2 = {0.7, 0.7}, el3 = {1, 1};
 vector<struct el> level_table = {el0, el1, el2, el3};
-const char* RESULT_DIR = "result";
-const char* BASELINE_FILE = "./result/baseline.txt";
+const char* RESULT_DIR = "./result/";
+char OUTPUT_FILE[30];
+
+char GRAPH_PATH [50];
+size_t sample_size = 1, period_T=10;
+double budget = 10;
 
 void init_node(Graph& g, vector<char*>& input_line){
     struct node* n = (struct node*)malloc(sizeof(struct node));
@@ -109,4 +113,43 @@ void create_graph(Graph &g, const char* GRAPH_FILE) {
     }
     fclose(fp_graph);
     if (line) free(line);
+}
+
+
+void set_config(char* argv, const char* file_name){
+    FILE *fp_config = fopen(argv, "r");
+    if (fp_config == NULL) {
+        printf("Failed to open file %s.", argv);
+        exit(EXIT_FAILURE);
+    }
+    
+    char *line = NULL;
+    size_t len = 0;
+    vector<char*>input_line;
+    
+    while ((getline(&line, &len, fp_config)) != -1) {
+        char* type = strtok(line, " ");
+        char* data = strtok(NULL, " ");
+        if(strcmp(type, "#") == 0){
+            continue;
+        }else if(strcmp(type, "c") == 0){
+            get_split_data(input_line, data, ",");
+        }
+    }
+    strncpy(GRAPH_PATH, input_line[0], 50);
+    sample_size = atoi(input_line[1]);
+    budget = atof(input_line[2]);
+    period_T = atoi(input_line[3]);
+    
+    strncpy(OUTPUT_FILE, RESULT_DIR, 10);
+    strcat(OUTPUT_FILE, file_name);
+    FILE* pFile = fopen (OUTPUT_FILE, "a");
+    if (pFile == NULL) {
+        printf("Failed to open file %s.", argv);
+        exit(EXIT_FAILURE);
+    }
+    fprintf (pFile, "=======================================================\n");
+    fprintf (pFile, "%-15s %s\n%-15s %s\n%-15s %s\n%-15s %s\n","Graph path: ", input_line[0], "Sample size: ", input_line[1], "Budget: ", input_line[2], "T:", input_line[3]);
+    fprintf (pFile, "=======================================================\n");
+    fclose (pFile);
 }

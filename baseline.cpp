@@ -7,13 +7,36 @@
 #include "init.h"
 using namespace std;
 
-extern const char* BASELINE_FILE;
+const char* NAME = "baseline.txt";
+extern int sample_size;
+extern double budget;
+extern char GRAPH_PATH[50];
+extern char OUTPUT_FILE[30];
+clock_t total_start, total_end;
 
-int main(){
+int main(int argc, char **argv){
     Graph g;
-    const char* GRAPH_FILE = "./covid_data/new_data/graph_4.txt";
-    create_graph(g, GRAPH_FILE);
+    total_end = clock();
+    if(argc != 2){
+        printf("Wrong argument. Execution format: ./main config.txt\n");
+        return 0;
+    }
+    set_config(argv[1], NAME);
+    create_graph(g, GRAPH_PATH);
     algo_baseline(g);
+    total_end = clock();
+
+
+    FILE * pFile;
+    pFile = fopen (OUTPUT_FILE, "a");
+    if (pFile == NULL) {
+        printf("Failed to open file %s.", OUTPUT_FILE);
+        exit(EXIT_FAILURE);
+    }
+    printf("Total time : %fs", (double)((total_end - total_start) / CLOCKS_PER_SEC));
+    fprintf(pFile, "\n------------------------\n");
+    fprintf(pFile, "Total time : %fs\n", (double)((total_end - total_start) / CLOCKS_PER_SEC));
+    fclose(pFile);
 }
 
 vector<vector<struct X> > algo_baseline(Graph& g){
@@ -36,7 +59,7 @@ vector<vector<struct X> > algo_baseline(Graph& g){
         PSPD_baseline(g, A, &diff_baseline_table, &X_in_set_A, &prev_best_A);
         cost_A = get_group_cost(A);
         end = clock();
-        printf("[ Iter: %lu ] %f\n", iter++, (double)((end - start) / CLOCKS_PER_SEC));
+        printf("[ Iter: %lu ] %fs\n", iter++, (double)((end - start) / CLOCKS_PER_SEC));
     }
     free(X_in_set_A);
     free(diff_baseline_table);

@@ -8,14 +8,35 @@
 #include "init.h"
 using namespace std;
 
-extern const char* BASELINE_FILE;
+const char* NAME = "greedy.txt";
+extern int sample_size;
+extern double budget;
+extern char GRAPH_PATH[50];
+extern char OUTPUT_FILE[30];
+clock_t total_start, total_end;
 
-int main(){
+int main(int argc, char **argv){
+    total_end = clock();
     Graph g;
-    const char* GRAPH_FILE = "./covid_data/new_data/graph_4.txt";
-    create_graph(g, GRAPH_FILE);
+    if(argc != 2){
+        printf("Wrong argument. Execution format: ./main config.txt\n");
+        return 0;
+    }
+    set_config(argv[1], NAME);
+    create_graph(g, GRAPH_PATH);
     algo_greedy(g);
-    
+    total_end = clock();
+
+    FILE * pFile;
+    pFile = fopen (OUTPUT_FILE, "a");
+    if (pFile == NULL) {
+        printf("Failed to open file %s.", OUTPUT_FILE);
+        exit(EXIT_FAILURE);
+    }
+    printf("Total time : %fs", (double)((total_end - total_start) / CLOCKS_PER_SEC));
+    fprintf(pFile, "\n------------------------\n");
+    fprintf(pFile, "Total time : %fs\n", (double)((total_end - total_start) / CLOCKS_PER_SEC));
+    fclose(pFile);
 }
 
 vector<vector<struct X> > algo_greedy(Graph& g){
@@ -23,10 +44,8 @@ vector<vector<struct X> > algo_greedy(Graph& g){
     vector<vector<struct X> > A, B, S;
     init_strategy(A);
     init_strategy(B);
-    int i=0, j=-1;
     double prev_best_A=0;
     double cost_A = get_group_cost(A);
-    double cost_B = get_group_cost(B);
     bool* X_in_set_A = (bool*) malloc(g.U_LENGTH*sizeof(bool));
     memset(X_in_set_A, false, g.U_LENGTH * sizeof(bool)); // for clearing previous record
     double* diff_baseline_table = (double*) malloc(g.U_LENGTH*sizeof(double));
@@ -40,7 +59,7 @@ vector<vector<struct X> > algo_greedy(Graph& g){
         PSPD_greedy(g, A, &diff_baseline_table, &X_in_set_A, &prev_best_A);
         cost_A = get_group_cost(A);
         end = clock();
-        printf("[ Iter: %lu ] %f\n", iter++, (double)((end - start) / CLOCKS_PER_SEC));
+        printf("[ Iter: %lu ] %fs\n", iter++, (double)((end - start) / CLOCKS_PER_SEC));
     }
     free(X_in_set_A);
     free(diff_baseline_table);

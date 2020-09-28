@@ -1,0 +1,5 @@
+# "#": for comment, the line behine it will be ignored.
+# "c": for instruction
+
+# graph_path,sample_size,budget,T (period time)
+c ./covid_data/new_data/graph_4.txt,10,10,40
