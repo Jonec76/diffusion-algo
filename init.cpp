@@ -26,7 +26,7 @@ void init_node(Graph& g, vector<char*>& input_line){
     n->id = atoi(input_line[0]);
     n->type = atoi(input_line[1]);
     n->params.relative = atof(input_line[2]);
-    n->params.contagion = atof(input_line[3]);
+    n->params.contagion = atof(input_line[3]); // Using get_contagion(type)? or random value?
     n->params.symptom = atof(input_line[4]);
     n->params.critical = atof(input_line[5]);
     n->params.healing_fromI = atof(input_line[6]);
