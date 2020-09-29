@@ -23,7 +23,7 @@ int main(int argc, char **argv){
     }
     set_config(argv[1], NAME);
     create_graph(g, GRAPH_PATH);
-    algo_baseline(g);
+    algo_baseline(g); // opt(g);
     total_end = clock();
 
 
