@@ -7,6 +7,8 @@ using namespace std;
 
 extern size_t sample_size, period_T;
 
+
+// TODO: remove sam_size parameter
 double diffusion(vector<vector<struct X> > Strategy, int sam_size, Graph& g){
     long double f = 0;
     srand(time(0));
