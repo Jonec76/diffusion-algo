@@ -18,7 +18,7 @@ const char* RESULT_DIR = "./result/";
 char OUTPUT_FILE[30];
 
 char GRAPH_PATH [50];
-size_t sample_size = 1, period_T=10;
+size_t sample_size = 1, period_T=3;
 double budget = 10;
 
 void init_node(Graph& g, vector<char*>& input_line){
@@ -152,4 +152,5 @@ void set_config(char* argv, const char* file_name){
     fprintf (pFile, "%-15s %s\n%-15s %s\n%-15s %s\n%-15s %s\n","Graph path: ", input_line[0], "Sample size: ", input_line[1], "Budget: ", input_line[2], "T:", input_line[3]);
     fprintf (pFile, "=======================================================\n");
     fclose (pFile);
+    fclose (fp_config);
 }

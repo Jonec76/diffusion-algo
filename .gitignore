@@ -1,5 +1,5 @@
 test_graph.cpp
-main
+mipc
 *.dSYM
 *.o
 .vscode

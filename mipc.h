@@ -3,9 +3,13 @@
 #include "graph.h"
 
 struct Path { 
-    // int curr_node;
     double path_prob;
-    bool* visited;
+
+    /**
+     * If we use bool* to defien visited, the pointer must be "malloc"
+     * when copy from another Path struct object.
+     */ 
+    vector<bool> visited;
     int neighbor;
     Stage neighbor_stage;
 }; 
