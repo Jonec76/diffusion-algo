@@ -231,3 +231,16 @@ char get_s(Stage s){
             break;
     }
 }
+
+double h_prob(vector<Path> infection_path_v, int t, vector<vector<X> > S){
+    double A_END;
+    if(t == 0)
+        return A_END;
+    
+    double AIP=1;
+    for(size_t p=0;p<infection_path_v.size();p++){
+
+    }
+
+    return AIP;
+}
