@@ -77,14 +77,6 @@ void create_graph(Graph &g, const char* GRAPH_FILE) {
         exit(EXIT_FAILURE);
     }
     
-    DIR* dir = opendir(RESULT_DIR);
-    if (dir) {
-        closedir(dir);
-    } else{
-        if (mkdir("result", S_IRWXU|S_IRWXG|S_IROTH))
-            printf("wrong at create dir");
-    }
-    
     char *line = NULL;
     size_t len = 0;
     
@@ -121,6 +113,14 @@ void set_config(char* argv, const char* file_name){
     if (fp_config == NULL) {
         printf("Failed to open file %s.", argv);
         exit(EXIT_FAILURE);
+    }
+
+    DIR* dir = opendir(RESULT_DIR);
+    if (dir) {
+        closedir(dir);
+    } else{
+        if (mkdir("result", S_IRWXU|S_IRWXG|S_IROTH))
+            printf("wrong at create dir");
     }
     
     char *line = NULL;
