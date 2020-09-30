@@ -10,17 +10,19 @@
 const char* NAME = "mipc.txt";
 extern char GRAPH_PATH[50];
 extern char OUTPUT_FILE[30];
+
 extern size_t period_T;
-double A_END = 0.8;
-double THETA = 0.9;
-int target_id = 0;
+extern double A_END ;
+extern double THETA ;
+extern int TARGET_V ;
+
 char get_s(Stage s);
 void output_path(vector<vector<Path>>&  tmp_path_set);
 void do_extend(vector<Path>& extend_path, vector<Path>& original_path, Path p);
 
 int main(int argc, char** argv){
     Graph g;
-    set_config(argv[1], NAME);
+    set_mipc_config(argv[1], NAME);
     create_graph(g, GRAPH_PATH);
     for(size_t j=0;j<g.V;j++){ // Init stage
         g.N[j]->stage = Stage::susceptible;
@@ -30,22 +32,25 @@ int main(int argc, char** argv){
             g.N[j]->stage = Stage::infected;
         }
     }
-    g.N[target_id]->stage = Stage::infected; // To be removed;
-    algo_mipc(g);
+    g.N[TARGET_V]->stage = Stage::infected; // To be removed;
+    algo_mipc(g, TARGET_V, THETA);
 }
 
-void algo_mipc(Graph& g){
+void algo_mipc(Graph& g, int target_v, double theta){
+
+    printf("Start Multi-hop infection Path Construction of node [%d].. \n\n", target_v);
+
     vector<vector<Path>> infection_path;
     vector<vector<Path>> tmp_path_set;
     vector<Path> single_path;
     vector<bool> visited(g.V, false);
 
     Path p;
-    p.neighbor = target_id;
+    p.neighbor = target_v;
     p.path_prob = 1;
-    visited[target_id] = true;
+    visited[target_v] = true;
     p.visited = visited;
-    p.neighbor_stage = g.N[target_id]->stage;
+    p.neighbor_stage = g.N[target_v]->stage;
 
     single_path.push_back(p);
     tmp_path_set.push_back(single_path);
@@ -61,11 +66,11 @@ void algo_mipc(Graph& g){
         double end_prob = original_path[original_path.size()-1].path_prob;
         Path p;
         
-        if(end_prob * A_END < THETA)
+        if(end_prob * A_END < theta)
             continue;
         switch (end_stage){
             case Stage::infected:
-                if(end_id != target_id){
+                if(end_id != target_v){
                     vector<Path> extend_path = original_path;
                     p.neighbor = end_id;
                     p.neighbor_stage = Stage::infected;
@@ -76,7 +81,7 @@ void algo_mipc(Graph& g){
 
                 for(size_t e=0;e < g.adj[end_id].size();e++){
                     struct node* u = g.N[g.adj[end_id][e].neighbor];
-                    double edge_prob = g.get_edge_prob(g.N[target_id], u);
+                    double edge_prob = g.get_edge_prob(g.N[target_v], u);
 
                     if(original_path[original_path.size()-1].visited[u->id])
                         continue;

@@ -14,6 +14,6 @@ struct Path {
     Stage neighbor_stage;
 }; 
 
-void algo_mipc(Graph& g);
+void algo_mipc(Graph& g, int target_v, double theta);
 
 #endif
