@@ -12,10 +12,15 @@ extern size_t period_T;
 extern double A_END ;
 extern double THETA ;
 extern int TARGET_V ;
+extern vector<struct el> level_table;
+
+int period_t=3; // 0 means himself, 1 means edge len=1 (1st extand)
+vector<vector<X> > S;
 
 char get_s(Stage s);
 void output_path(vector<vector<Path>>&  infection_path);
 void do_extend(vector<Path>& extend_path, vector<Path>& original_path, Path p);
+double h_prob(vector<vector<Path>> infection_path, size_t period_t, vector<vector<X> > S, Graph& g);
 
 int main(int argc, char** argv){
     Graph g;
@@ -32,8 +37,14 @@ int main(int argc, char** argv){
     }
     g.N[TARGET_V]->stage = Stage::infected; // To be removed;
     algo_mipc(g, TARGET_V, THETA, infection_path);
-    
+
+    h_prob(infection_path, period_t, g.U, g);
 }
+
+// Because parameters get a random value between 0~1
+// so the probability of edge would become negative after calculating the following formula
+//   prob * (1 - end_node->params.symptom - end_node->params.healing_fromI);
+
 
 void algo_mipc(Graph& g, int target_v, double theta, vector<vector<Path>>& infection_path){
 
@@ -53,7 +64,7 @@ void algo_mipc(Graph& g, int target_v, double theta, vector<vector<Path>>& infec
     infection_path.push_back(single_path);
 
     for(size_t i=0;i<infection_path.size();i++){
-        if(infection_path[i].size() == period_T)
+        if(infection_path[i].size() > period_T)
             break;
         
         vector<Path> original_path = infection_path[i];
@@ -198,7 +209,7 @@ void output_path(vector<vector<Path>>&  infection_path){
             continue;
         fprintf(fp, " %d(%c)", infection_path[i][0].neighbor, get_s(infection_path[i][0].neighbor_stage));
         for(size_t j=1;j<infection_path[i].size();j++){
-            fprintf(fp, " <--- %.3f --- %d(%c)", infection_path[i][j].path_prob, infection_path[i][j].neighbor, get_s(infection_path[i][j].neighbor_stage));
+            fprintf(fp, " <---%.3f--- %d(%c)", infection_path[i][j].path_prob, infection_path[i][j].neighbor, get_s(infection_path[i][j].neighbor_stage));
         }
         fprintf(fp, "\n\n");
     }
@@ -232,14 +243,43 @@ char get_s(Stage s){
     }
 }
 
-double h_prob(vector<Path> infection_path_v, int t, vector<vector<X> > S){
+double h_prob(vector<vector<Path>> infection_path, size_t T, vector<vector<X> > S, Graph& g){
     double A_END;
-    if(t == 0)
-        return A_END;
-    
     double AIP=1;
-    for(size_t p=0;p<infection_path_v.size();p++){
 
+    if(period_t == 0)
+        return A_END;
+
+    vector<vector<Path>> infection_path_t;
+    for(size_t i=0;i<infection_path.size();i++){
+        // period + 1: If period=3 means we want |path|=3, but this condition will only add the path whose len=2
+        if(infection_path[i].size() == period_t+1)
+            infection_path_t.push_back(infection_path[i]);
+    }
+
+    if(S.size() < period_t){
+        printf("Wrong strategies set sizes");
+        return 0;
+    }
+
+    for(size_t i=0;i<infection_path_t.size();i++){
+        vector<Path> path = infection_path_t[i];
+        double success = path[period_t].path_prob;
+
+        // t >= 1: the reason for setting this lower bound is we'll take two nodes at one iteration.
+        // infection_path_t[T-1] will be affected by quarantine strategy (first day)
+        for(int t=period_t;t>=1;t--){
+            int u_today = path[t].neighbor, u_next_day = path[t-1].neighbor;
+
+            // // Strategies starts from 0 to period_t-1, but the infection path traverse with the reverse order.
+            g.set_node_lv(S[period_t - t]); 
+
+            // For debuging each edge level (set level value with the max level after comparing from two nodes).
+            // printf("today:%d(level=%d) , next day: %d(level=%d) |", u_today, g.N[u_today]->q_level, u_next_day, g.N[u_next_day]->q_level);
+            double remove_prob = max(level_table[g.N[u_today]->q_level].remove_p, level_table[g.N[u_next_day]->q_level].remove_p);
+            success *= (1 - remove_prob);
+        }
+        AIP *= (1-success);
     }
 
     return AIP;
