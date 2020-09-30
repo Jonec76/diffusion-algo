@@ -1,5 +1,6 @@
 #ifndef INIT_H
 #define INIT_H
+#include "graph.h"
 
 void set_mipc_config(char* argv, const char* file_name);
 void set_config(char* argv, const char* file_name);

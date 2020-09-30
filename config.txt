@@ -6,4 +6,4 @@
 c ./covid_data/new_data/graph_3.txt,10,10,3
 
 # graph_path,A_END,theta,T(period time),v(node)
-m ./covid_data/new_data/test.txt,1,0,5,0
+m ./covid_data/new_data/test.txt,1,0.2,5,0

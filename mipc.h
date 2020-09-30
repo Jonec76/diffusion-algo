@@ -13,7 +13,6 @@ struct Path {
     int neighbor;
     Stage neighbor_stage;
 }; 
-
-void algo_mipc(Graph& g, int target_v, double theta);
+void algo_mipc(Graph& g, int target_v, double theta, vector<vector<Path>>& infection_path);
 
 #endif

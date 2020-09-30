@@ -1,5 +1,7 @@
 test_graph.cpp
 mipc
+baseline
+greedy
 *.dSYM
 *.o
 .vscode

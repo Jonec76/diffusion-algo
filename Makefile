@@ -4,7 +4,7 @@ CC = g++
 .PHONY : clean
 
 OBJS := init.o diff_func.o diffusion.o graph.o algo.o
-TARGETS := greedy.cpp baseline.cpp mipc.cpp
+TARGETS := greedy baseline mipc
 
 all:$(TARGETS)
 $(TARGETS): $(OBJS) greedy.cpp baseline.cpp mipc.cpp

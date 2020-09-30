@@ -41,7 +41,7 @@ void init_node(Graph& g, vector<char*>& input_line){
 }
 
 void init_edge(Graph& g, vector<char*>& input_line){
-    g.addEdge(atoi(input_line[0]), atoi(input_line[1]), atoi(input_line[2]));
+    g.addEdge(atoi(input_line[0]), atoi(input_line[1]), atof(input_line[2]));
 }
 
 void init_strategy(Graph& g, vector<char*>& input_line){

@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include "diff_func.h"
-#include "algo.h"
-#include "graph.h"
 #include "init.h"
 #include "mipc.h"
 
@@ -17,13 +14,14 @@ extern double THETA ;
 extern int TARGET_V ;
 
 char get_s(Stage s);
-void output_path(vector<vector<Path>>&  tmp_path_set);
+void output_path(vector<vector<Path>>&  infection_path);
 void do_extend(vector<Path>& extend_path, vector<Path>& original_path, Path p);
 
 int main(int argc, char** argv){
     Graph g;
     set_mipc_config(argv[1], NAME);
     create_graph(g, GRAPH_PATH);
+    vector<vector<Path>> infection_path;
     for(size_t j=0;j<g.V;j++){ // Init stage
         g.N[j]->stage = Stage::susceptible;
         double r = (rand() % 100)/100.0; //here: 0;
@@ -33,15 +31,14 @@ int main(int argc, char** argv){
         }
     }
     g.N[TARGET_V]->stage = Stage::infected; // To be removed;
-    algo_mipc(g, TARGET_V, THETA);
+    algo_mipc(g, TARGET_V, THETA, infection_path);
+    
 }
 
-void algo_mipc(Graph& g, int target_v, double theta){
+void algo_mipc(Graph& g, int target_v, double theta, vector<vector<Path>>& infection_path){
 
     printf("Start Multi-hop infection Path Construction of node [%d].. \n\n", target_v);
 
-    vector<vector<Path>> infection_path;
-    vector<vector<Path>> tmp_path_set;
     vector<Path> single_path;
     vector<bool> visited(g.V, false);
 
@@ -53,13 +50,13 @@ void algo_mipc(Graph& g, int target_v, double theta){
     p.neighbor_stage = g.N[target_v]->stage;
 
     single_path.push_back(p);
-    tmp_path_set.push_back(single_path);
+    infection_path.push_back(single_path);
 
-    for(size_t i=0;i<tmp_path_set.size();i++){
-        if(tmp_path_set[i].size() == period_T)
+    for(size_t i=0;i<infection_path.size();i++){
+        if(infection_path[i].size() == period_T)
             break;
         
-        vector<Path> original_path = tmp_path_set[i];
+        vector<Path> original_path = infection_path[i];
         int end_id = original_path[original_path.size()-1].neighbor;
         struct node* end_node = g.N[end_id];
         Stage end_stage = original_path[original_path.size()-1].neighbor_stage;
@@ -76,13 +73,12 @@ void algo_mipc(Graph& g, int target_v, double theta){
                     p.neighbor_stage = Stage::infected;
                     p.path_prob = end_prob * (1 - end_node->params.symptom - end_node->params.healing_fromI);
                     do_extend(extend_path, original_path, p);
-                    tmp_path_set.push_back(extend_path);
+                    infection_path.push_back(extend_path);
                 }
 
                 for(size_t e=0;e < g.adj[end_id].size();e++){
                     struct node* u = g.N[g.adj[end_id][e].neighbor];
                     double edge_prob = g.get_edge_prob(g.N[target_v], u);
-
                     if(original_path[original_path.size()-1].visited[u->id])
                         continue;
                     for(int i=0;i<3;i++){
@@ -107,7 +103,7 @@ void algo_mipc(Graph& g, int target_v, double theta){
                         }
                         do_extend(extend_path, original_path, p);
                         extend_path[extend_path.size()-1].visited[u->id] = true;
-                        tmp_path_set.push_back(extend_path);
+                        infection_path.push_back(extend_path);
 
                         // For debuggin the visited boolean table.
                         // cout<<"end: "<<end_id<<": ";
@@ -135,7 +131,7 @@ void algo_mipc(Graph& g, int target_v, double theta){
                             break;
                     }
                     do_extend(extend_path, original_path, p);
-                    tmp_path_set.push_back(extend_path);
+                    infection_path.push_back(extend_path);
                 }
                 break;
             case Stage::threatened:
@@ -156,14 +152,14 @@ void algo_mipc(Graph& g, int target_v, double theta){
                             break;
                     }
                     do_extend(extend_path, original_path, p);
-                    tmp_path_set.push_back(extend_path);
+                    infection_path.push_back(extend_path);
                 }
                 break;
             default:
                 continue;
         }
         if(end_stage != Stage::infected){
-            tmp_path_set.erase(i + tmp_path_set.begin());
+            infection_path.erase(i + infection_path.begin());
             i--;
         }else{
             original_path[original_path.size()-1].path_prob *= A_END;
@@ -171,16 +167,16 @@ void algo_mipc(Graph& g, int target_v, double theta){
     }
 
     // check the len=T-1 path and remove it if the end.Stage is Infected;
-    for(int k=tmp_path_set.size()-1;k>=0;k--){ 
-        vector<Path> check_path = tmp_path_set[k];
+    for(int k=infection_path.size()-1;k>=0;k--){ 
+        vector<Path> check_path = infection_path[k];
         size_t len = check_path.size()-1;
         if(len != period_T-1)
             break;
         if(check_path[len].neighbor_stage != Stage::infected){
-            tmp_path_set.erase(k + tmp_path_set.begin());
+            infection_path.erase(k + infection_path.begin());
         }  
     }
-    output_path(tmp_path_set);
+    output_path(infection_path);
 }
 
 void do_extend(vector<Path>& extend_path, vector<Path>& original_path, Path p){
@@ -188,8 +184,8 @@ void do_extend(vector<Path>& extend_path, vector<Path>& original_path, Path p){
     extend_path[extend_path.size()-1].visited = original_path[original_path.size()-1].visited;
 }
 
-void output_path(vector<vector<Path>>&  tmp_path_set){
-    size_t total_path_num = tmp_path_set.size();
+void output_path(vector<vector<Path>>&  infection_path){
+    size_t total_path_num = infection_path.size();
     string line = "";
     FILE *fp = fopen(OUTPUT_FILE, "a");
     if (fp == NULL) {
@@ -198,11 +194,11 @@ void output_path(vector<vector<Path>>&  tmp_path_set){
     }
     for(size_t i=0;i<total_path_num;i++){
         fprintf(fp, "%-5ld :", i);
-        if(tmp_path_set[i].size() == 0)
+        if(infection_path[i].size() == 0)
             continue;
-        fprintf(fp, " %d(%c)", tmp_path_set[i][0].neighbor, get_s(tmp_path_set[i][0].neighbor_stage));
-        for(size_t j=1;j<tmp_path_set[i].size();j++){
-            fprintf(fp, " <-- %d(%c)", tmp_path_set[i][j].neighbor, get_s(tmp_path_set[i][j].neighbor_stage));
+        fprintf(fp, " %d(%c)", infection_path[i][0].neighbor, get_s(infection_path[i][0].neighbor_stage));
+        for(size_t j=1;j<infection_path[i].size();j++){
+            fprintf(fp, " <--- %.3f --- %d(%c)", infection_path[i][j].path_prob, infection_path[i][j].neighbor, get_s(infection_path[i][j].neighbor_stage));
         }
         fprintf(fp, "\n\n");
     }
