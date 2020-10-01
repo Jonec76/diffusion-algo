@@ -12,8 +12,8 @@
 using namespace std;
 
 struct X X1, X2, X3, X4;
-struct el el0 = {0, 0.5}, el1 = {0.3, 0.3}, el2 = {0.7, 0.7}, el3 = {1, 1};
-vector<struct el> level_table = {el0, el1, el2, el3};
+struct el el0 = {0, 0.5}, el1 = {0.5, 0.5}, el2 = {1, 1};
+vector<struct el> level_table = {el0, el1, el2};
 const char* RESULT_DIR = "./result/";
 char OUTPUT_FILE[30];
 
@@ -76,10 +76,10 @@ void create_graph(Graph &g, const char* GRAPH_FILE) {
         printf("Failed to open file %s.", GRAPH_FILE);
         exit(EXIT_FAILURE);
     }
-    
+
     char *line = NULL;
     size_t len = 0;
-    
+
     while ((getline(&line, &len, fp_graph)) != -1) {
         char* type = strtok(line, " ");
         char* data = strtok(NULL, " ");
@@ -87,7 +87,7 @@ void create_graph(Graph &g, const char* GRAPH_FILE) {
         if(strcmp(type, "g") == 0){
             get_split_data(input_line, data, ",");
             int V=atoi(input_line[0]);
-            int E=atoi(input_line[1]); //input_line[2]: U length 
+            int E=atoi(input_line[1]); //input_line[2]: U length
             int U_LENGTH = atoi(input_line[2]);
             g.init_graph(V, E, U_LENGTH);
         }else if(strcmp(type, "e") == 0){
@@ -122,11 +122,11 @@ void set_config(char* argv, const char* file_name){
         if (mkdir("result", S_IRWXU|S_IRWXG|S_IROTH))
             printf("wrong at create dir");
     }
-    
+
     char *line = NULL;
     size_t len = 0;
     vector<char*>input_line;
-    
+
     while ((getline(&line, &len, fp_config)) != -1) {
         char* type = strtok(line, " ");
         char* data = strtok(NULL, " ");
@@ -140,7 +140,7 @@ void set_config(char* argv, const char* file_name){
     sample_size = atoi(input_line[1]);
     budget = atof(input_line[2]);
     period_T = atoi(input_line[3]);
-    
+
     strncpy(OUTPUT_FILE, RESULT_DIR, 10);
     strcat(OUTPUT_FILE, file_name);
     FILE* pFile = fopen (OUTPUT_FILE, "a");
