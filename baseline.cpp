@@ -16,7 +16,7 @@ clock_t total_start, total_end;
 
 int main(int argc, char **argv){
     Graph g;
-    total_end = clock();
+    total_start = clock();
     if(argc != 2){
         printf("Wrong argument. Execution format: ./main config.txt\n");
         return 0;

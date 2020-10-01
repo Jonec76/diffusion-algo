@@ -2,10 +2,11 @@
 #include <string.h>
 #include <time.h>
 #include <cstdlib>
+#include "init.h"
 #include "diff_func.h"
 #include "algo.h"
 #include "graph.h"
-#include "init.h"
+
 using namespace std;
 
 const char* NAME = "greedy.txt";
@@ -16,7 +17,7 @@ extern char OUTPUT_FILE[30];
 clock_t total_start, total_end;
 
 int main(int argc, char **argv){
-    total_end = clock();
+    total_start = clock();
     Graph g;
     if(argc != 2){
         printf("Wrong argument. Execution format: ./main config.txt\n");
