@@ -12,7 +12,12 @@ extern size_t sample_size, period_T;
 extern double budget;
 
 double get_X_cost(struct X x_t){
-    return level_table[x_t.lv].phi_cost * x_t.cost;
+    if (x_t.lv == 0){
+        return 1;
+    }
+    else{
+        return level_table[x_t.lv].phi_cost * x_t.cost;
+    }
 }
 
 void init_strategy(vector<vector<struct X> >& s){
@@ -102,9 +107,9 @@ void PSPD_baseline(Graph& g, vector<vector<struct X> >& A, double* diff_baseline
 
     (*X_in_set_A)[max_one_dim_idx] = true;
     *prev_best_A = *prev_best_A + (*diff_baseline_table)[max_one_dim_idx];
-    
+
     // TODO: Candidate set
-}   
+}
 
 
 void PSPD_greedy(Graph& g, vector<vector<struct X> >& A, double* diff_baseline_table[], bool* X_in_set_A[], double* prev_best_A){
@@ -121,7 +126,8 @@ void PSPD_greedy(Graph& g, vector<vector<struct X> >& A, double* diff_baseline_t
                 continue;
             }
 
-            double denominator = (level_table[u_X.lv].phi_cost * u_X.cost);
+            //double denominator = (level_table[u_X.lv].phi_cost * u_X.cost);
+            double denominator = get_X_cost(u_X);
             assert(denominator != 0);
             if((baseline_value / denominator) > max_value){
                 best_X = u_X;
@@ -153,9 +159,9 @@ void PSPD_greedy(Graph& g, vector<vector<struct X> >& A, double* diff_baseline_t
 
     (*X_in_set_A)[max_one_dim_idx] = true;
     *prev_best_A = *prev_best_A + (*diff_baseline_table)[max_one_dim_idx];
-    
+
     // TODO: Candidate set
-}   
+}
 
 bool has_candidate(double* diff_baseline_table, int U_LENGTH){
     bool stop = true;
