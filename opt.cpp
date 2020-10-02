@@ -113,7 +113,7 @@ void opt(Graph &g, const char* GRAPH_FILE) {
         printf("Failed to open file %s.", OUTPUT_FILE);
         exit(EXIT_FAILURE);
     }
-    fprintf(pFile,"Optimal Value : %3f\n Optimal Strategy Index : %d\n\nStrategy :\n",max,max_index);
+    fprintf(pFile,"Optimal Value : %3f\nOptimal Strategy Index : %d\n\nStrategy :\n",max,max_index);
     for(size_t i=0;i<max_content.size();i++){
         for(size_t j=0;j<max_content[i].size();j++){
             fprintf (pFile, "%d_%d ", max_content[i][j].t, max_content[i][j].id);
