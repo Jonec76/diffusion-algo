@@ -12,7 +12,10 @@
 using namespace std;
 
 struct X X1, X2, X3, X4;
-struct el el0 = {0, 0.5}, el1 = {0.5, 0.5}, el2 = {1, 1};
+
+// el0 is not used (0 for the group who are not quantined. we handle it in get_X_cost)
+
+struct el el0, el1 = {0.5, 0.5}, el2 = {1, 1};
 vector<struct el> level_table = {el0, el1, el2};
 const char* RESULT_DIR = "./result/";
 char OUTPUT_FILE[30];
