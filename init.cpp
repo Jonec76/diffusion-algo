@@ -4,6 +4,9 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <regex>
+#include <assert.h>
+
 #include "data.h"
 #include "diff_func.h"
 #include "graph.h"
@@ -18,7 +21,8 @@ struct X X1, X2, X3, X4;
 struct el el0, el1 = {0.5, 0.5}, el2 = {1, 1};
 vector<struct el> level_table = {el0, el1, el2};
 const char* RESULT_DIR = "./result/";
-char OUTPUT_FILE[30];
+const char* GRAPH_DIR = "./covid_data/";
+char OUTPUT_FILE[50];
 
 char GRAPH_PATH [50];
 size_t sample_size = 1, period_T=10;
@@ -46,8 +50,10 @@ void init_edge(Graph& g, vector<char*>& input_line){
 void init_strategy(Graph& g, vector<char*>& input_line){
     struct X x;
     x.t = atoi(input_line[0]);
+    assert((unsigned int)x.t < period_T);
     x.cost = atoi(input_line[1]);
     x.lv = atoi(input_line[2]);
+    assert(1 == x.lv || 2 == x.lv);
     x.eta = atoi(input_line[3]);
     x.id = g.U[x.t].size();
     char delim[] = ",";
@@ -139,20 +145,43 @@ void set_config(char* argv, const char* file_name){
             get_split_data(input_line, data, ",");
         }
     }
-    strncpy(GRAPH_PATH, input_line[0], 50);
+    
+    strcat(GRAPH_PATH, GRAPH_DIR);
+    strcat(GRAPH_PATH, input_line[0]);
+
     sample_size = atoi(input_line[1]);
     budget = atof(input_line[2]);
     period_T = atoi(input_line[3]);
 
-    strncpy(OUTPUT_FILE, RESULT_DIR, 10);
-    strcat(OUTPUT_FILE, file_name);
+    string tmp = RESULT_DIR;
+    // For cleaning string
+
+    tmp += file_name;
+    tmp += "_";
+    tmp += input_line[0]; 
+    tmp += "_"; 
+    tmp += input_line[1];
+    tmp += "_"; 
+    tmp += input_line[2];
+    tmp += "_"; 
+    tmp += input_line[3];
+
+    regex reg(".txt");
+    tmp = regex_replace(tmp, reg, "");
+
+    tmp += ".txt"; 
+
+    strcpy(OUTPUT_FILE, tmp.c_str());
+    
     FILE* pFile = fopen (OUTPUT_FILE, "a");
     if (pFile == NULL) {
-        printf("Failed to open file %s.", argv);
+        printf("Failed to open file %s.", OUTPUT_FILE);
         exit(EXIT_FAILURE);
     }
     fprintf (pFile, "=======================================================\n");
-    fprintf (pFile, "%-15s %s\n%-15s %s\n%-15s %s\n%-15s %s\n","Graph path: ", input_line[0], "Sample size: ", input_line[1], "Budget: ", input_line[2], "T:", input_line[3]);
+    fprintf (pFile, "%-15s :%s\n%-15s :%s\n%-15s :%s\n%-15s :%s\n","Graph file: ", input_line[0], "Sample size ", input_line[1], "Budget ", input_line[2], "T", input_line[3]);
     fprintf (pFile, "=======================================================\n");
     fclose (pFile);
+    
+    printf ("%-15s :%s\n%-15s :%s\n%-15s :%s\n%-15s :%s\n","Graph file ", input_line[0], "Sample size ", input_line[1], "Budget ", input_line[2], "T", input_line[3]);
 }
