@@ -7,5 +7,5 @@ mipc
 .vscode
 /covid_data
 result/
-baseline
+greedy
 main
