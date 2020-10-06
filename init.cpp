@@ -18,8 +18,8 @@ struct X X1, X2, X3, X4;
 
 // el0 is not used (0 for the group who are not quantined. we handle it in get_X_cost)
 
-struct el el0, el1 = {0.5, 0.5}, el2 = {1, 1};
-vector<struct el> level_table = {el0, el1, el2};
+struct el el0, el1 = {0.2, 0.2}, el2 = {0.8, 0.8}, el3 = {1, 1};
+vector<struct el> level_table = {el0, el1, el2, el3};
 const char* RESULT_DIR = "./result/";
 const char* GRAPH_DIR = "./covid_data/";
 char OUTPUT_FILE[50];
@@ -53,7 +53,7 @@ void init_strategy(Graph& g, vector<char*>& input_line){
     assert((unsigned int)x.t < period_T);
     x.cost = atoi(input_line[1]);
     x.lv = atoi(input_line[2]);
-    assert(1 == x.lv || 2 == x.lv);
+    assert(1 == x.lv || 2 == x.lv || 3 == x.lv);
     x.eta = atoi(input_line[3]);
     x.id = g.U[x.t].size();
     char delim[] = ",";
