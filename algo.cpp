@@ -112,7 +112,7 @@ void PSPD_baseline(Graph& g, vector<vector<struct X> >& A, double* diff_baseline
 }
 
 
-void PSPD_greedy(Graph& g, vector<vector<struct X> >& A, double* diff_baseline_table[], bool* X_in_set_A[], double* prev_best_A){
+void PSPD_main(Graph& g, vector<vector<struct X> >& A, double* diff_baseline_table[], bool* X_in_set_A[], double* prev_best_A){
     struct X best_X;
     int one_dim_idx=0;
     double max_value = -1;
@@ -146,7 +146,7 @@ void PSPD_greedy(Graph& g, vector<vector<struct X> >& A, double* diff_baseline_t
         printf("Failed to open file %s.", OUTPUT_FILE);
         exit(EXIT_FAILURE);
     }
-    fprintf (pFile, "\n%-15s :%f\n%-15s :%f\n%-15s :%f\n%-15s :%f\n%-15s :%d_%d_%d\n%-15s :","greedy: ",  max_value, "F(A U {X}, T)", ((*diff_baseline_table)[max_one_dim_idx] + *prev_best_A), "F(A, T)", *prev_best_A, "/ phi * C(D)", (level_table[best_X.lv].phi_cost * best_X.cost), "X_t_id_OneDim", best_X.t, best_X.id, max_one_dim_idx, "A Strategies");
+    fprintf (pFile, "\n%-15s :%f\n%-15s :%f\n%-15s :%f\n%-15s :%f\n%-15s :%d_%d_%d\n%-15s :","main: ",  max_value, "F(A U {X}, T)", ((*diff_baseline_table)[max_one_dim_idx] + *prev_best_A), "F(A, T)", *prev_best_A, "/ phi * C(D)", (level_table[best_X.lv].phi_cost * best_X.cost), "X_t_id_OneDim", best_X.t, best_X.id, max_one_dim_idx, "A Strategies");
     int tmp_idx = 0;
     for(size_t i=0;i<A.size();i++){
         for(size_t j=0;j<A[i].size();j++){

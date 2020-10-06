@@ -8,7 +8,7 @@
 #include "init.h"
 using namespace std;
 
-const char* NAME = "greedy.txt";
+const char* NAME = "main.txt";
 extern int sample_size;
 extern double budget;
 extern char GRAPH_PATH[50];
@@ -24,7 +24,7 @@ int main(int argc, char **argv){
     }
     set_config(argv[1], NAME);
     create_graph(g, GRAPH_PATH);
-    algo_greedy(g);
+    algo_main(g);
     total_end = clock();
 
     FILE * pFile;
@@ -39,8 +39,8 @@ int main(int argc, char **argv){
     fclose(pFile);
 }
 
-vector<vector<struct X> > algo_greedy(Graph& g){
-    printf("Start greedy algorithm ..\n\n");
+vector<vector<struct X> > algo_main(Graph& g){
+    printf("Start main algorithm ..\n\n");
     vector<vector<struct X> > A, B, S;
     init_strategy(A);
     init_strategy(B);
@@ -56,7 +56,7 @@ vector<vector<struct X> > algo_greedy(Graph& g){
         start = clock();
         vector<struct X> C;
         calc_baseline(g, A, prev_best_A, cost_A, &diff_baseline_table, X_in_set_A, sample_size);
-        PSPD_greedy(g, A, &diff_baseline_table, &X_in_set_A, &prev_best_A);
+        PSPD_main(g, A, &diff_baseline_table, &X_in_set_A, &prev_best_A);
         cost_A = get_group_cost(A);
         end = clock();
         printf("[ Iter: %lu ] %fs\n", iter++, (double)((end - start) / CLOCKS_PER_SEC));
