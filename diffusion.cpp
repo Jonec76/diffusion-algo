@@ -19,9 +19,7 @@ double diffusion(vector<vector<struct X> > Strategy, int sam_size, Graph& g){
         for(size_t j=0;j<g.V;j++){ // Init stage
             g.N[j]->stage = Stage::susceptible;
             double r = (rand() % 100)/100.0; //here: 0;
-            double s_i = g.N[j]->params.relative * g.N[j]->params.contagion;
-            // cout<<"node_p: "<<s_i<<" < "<<r<<endl;
-            if(r < s_i){
+            if(r < a_v){
                 g.N[j]->stage = Stage::infected;
                 migrate(&susceptible, &infected, g.N[j]);
             }
