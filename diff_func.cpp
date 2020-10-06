@@ -10,7 +10,7 @@
 using namespace std;
 
 string title[6] = {"susceptible", "infected", "ailing", "threatened", "dead", "recovered"};
-double alpha_f=0.8, alpha_g=0.9, param_c=1; 
+double alpha_f=0.944, alpha_g=0.5, param_c=2; 
 extern vector<struct el> level_table;
 
 void print_group(vector<vector<struct node*>*> v) {
