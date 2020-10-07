@@ -20,13 +20,6 @@ double get_X_cost(struct X x_t){
     }
 }
 
-void init_strategy(vector<vector<struct X> >& s){
-    for(size_t i=0;i<period_T;i++){
-        vector<struct X> x_t;
-        s.push_back(x_t);
-    }
-}
-
 double get_group_cost(vector<vector<struct X> >& group){
     double cost = 0;
     for(size_t t=0;t<group.size();t++){
@@ -36,27 +29,79 @@ double get_group_cost(vector<vector<struct X> >& group){
     }
     return cost;
 }
-void calc_greedy(Graph& g, vector<vector<struct X> >& A, double prev_best_A, double cost_A, double* diff_greedy_table[], bool X_in_set_A[]){
-    int one_dim_idx=0;
+
+void init_strategy(vector<vector<struct X> >& s){
+    for(size_t i=0;i<period_T;i++){
+        vector<struct X> x_t;
+        s.push_back(x_t);
+    }
+}
+
+void calc_greedy(vector<vector<struct X> >& S, Graph& g, bool* X_in_set_S[], double* prev_greedy_S, bool* has_better_group){
+    int one_dim_idx=0, min_one_dim_idx=0;
+    double min_greedy_value = INT32_MAX;
+    struct X min_X;
     for(size_t i=0;i<g.U.size();i++){ // each X_t in U;
         for(size_t j=0;j<g.U[i].size();j++){ // each X in X_t
-            if(X_in_set_A[one_dim_idx]){
-                (*diff_greedy_table)[one_dim_idx] = has_in_set;
+            if((*X_in_set_S)[one_dim_idx]){
                 one_dim_idx++;
                 continue;
             }
-
+            vector<vector<struct X> > tmp = S;
             struct X u_X = g.U[i][j];
-            vector<vector<struct X> > tmpA = A;
-            if(cost_A + get_X_cost(u_X) > budget){
-                (*diff_greedy_table)[one_dim_idx] = out_of_cost;
-                one_dim_idx++;
-                continue;
+
+            tmp[u_X.t].push_back(u_X);
+            double tmp_value = diffusion_greedy(tmp, g);
+            if( tmp_value < min_greedy_value){
+                min_greedy_value = tmp_value;
+                min_X = u_X;
+                min_one_dim_idx = one_dim_idx;
             }
-            tmpA[u_X.t].push_back(u_X);
-            (*diff_greedy_table)[one_dim_idx] = diffusion_greedy(tmpA, g) - prev_best_A;
             one_dim_idx++;
         }
+    }
+    if(min_greedy_value > *prev_greedy_S){
+        *has_better_group = false;
+        return;
+    }
+
+    S[min_X.t].push_back(min_X);
+    (*X_in_set_S)[min_one_dim_idx] = true;
+    *prev_greedy_S = min_greedy_value;
+
+
+    FILE * pFile;
+    pFile = fopen (OUTPUT_FILE, "a");
+    if (pFile == NULL) {
+        printf("Failed to open file %s.", OUTPUT_FILE);
+        exit(EXIT_FAILURE);
+    }
+    fprintf (pFile, "\n%-15s :%f\n%-15s :%d_%d\n%-15s :","greedy ", min_greedy_value, "X ",  min_X.t, min_X.id, "S ");
+    int tmp_idx = 0;
+    for(size_t i=0;i<S.size();i++){
+        for(size_t j=0;j<S[i].size();j++){
+            fprintf (pFile, "%d_%d ", S[i][j].t, S[i][j].id);
+            tmp_idx++;
+        }
+    }
+    fprintf(pFile, "\n");
+    fclose (pFile);
+
+    int tmp_one_dim_index = 0;
+    for(size_t i=0;i<g.U.size();i++){ // each X_t in U;
+        for(size_t j=0;j<g.U[i].size();j++){ // each X in X_t
+            if(!(*X_in_set_S)[tmp_one_dim_index] && get_X_cost(g.U[i][j]) > budget - get_group_cost(S)){
+                (*X_in_set_S)[tmp_one_dim_index] = out_of_budget;
+            }
+            tmp_one_dim_index++;
+        }
+    }
+}
+
+void init_positive_group(vector<vector<struct node> >& p){
+    for(size_t i=0;i<3;i++){
+        vector<struct node> tmp;
+        p.push_back(tmp);
     }
 }
 
@@ -83,11 +128,6 @@ void calc_main(Graph& g, vector<vector<struct X> >& A, double prev_best_A, doubl
         }
     }
 }
-
-void PSPD_greedy(Graph& g, vector<vector<struct X> >& A, double* diff_greedy_table[], bool* X_in_set_A[], double* prev_best_A){
-    // TODO: PSPD_greedy
-}
-
 
 void PSPD_main(Graph& g, vector<vector<struct X> >& A, double* diff_baseline_table[], bool* X_in_set_A[], double* prev_best_A){
     struct X best_X;

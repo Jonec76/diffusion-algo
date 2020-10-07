@@ -17,6 +17,7 @@
 #define eta_default -1
 
 #define out_of_cost -2
+#define out_of_budget true
 #define has_in_set -1
 
 #include<iostream>

@@ -41,28 +41,18 @@ int main(int argc, char **argv){
 
 vector<vector<struct X> > algo_greedy(Graph& g){
     printf("Start greedy algorithm ..\n\n");
-    vector<vector<struct X> > A, B, S;
-    init_strategy(A);
-    init_strategy(B);
-    double prev_best_A=0;
-    double cost_A = get_group_cost(A);
-    bool* X_in_set_A = (bool*) malloc(g.U_LENGTH*sizeof(bool));
-    memset(X_in_set_A, false, g.U_LENGTH * sizeof(bool)); // for clearing previous record
-    double* diff_greedy_table = (double*) malloc(g.U_LENGTH*sizeof(double));
-    memset(diff_greedy_table, 0, g.U_LENGTH * sizeof(double)); // for clearing previous record
-    size_t iter = 0;
-    clock_t start, end;
-    while((cost_A < budget) && has_candidate(diff_greedy_table, g.U_LENGTH)){
-        start = clock();
-        vector<struct X> C;
-        calc_greedy(g, A, prev_best_A, cost_A, &diff_greedy_table, X_in_set_A);
-        PSPD_greedy(g, A, &diff_greedy_table, &X_in_set_A, &prev_best_A);
-        cost_A = get_group_cost(A);
-        end = clock();
-        printf("[ Iter: %lu ] %fs\n", iter++, (double)((end - start) / CLOCKS_PER_SEC));
+    vector<vector<struct X> > S;
+    vector<vector<struct node>> min_positive_group;
+    bool* X_in_set_S = (bool*) malloc(g.U_LENGTH*sizeof(bool));
+    memset(X_in_set_S, false, g.U_LENGTH * sizeof(bool)); // for clearing previous record
+    init_strategy(S);
+    init_positive_group(min_positive_group);
+    double prev_greedy_S = diffusion_greedy(S, g);
+    bool has_better_group = true;
+    while(get_group_cost(S) < budget && has_better_group){
+        calc_greedy(S, g, &X_in_set_S, &prev_greedy_S, &has_better_group);
     }
-    free(X_in_set_A);
-    free(diff_greedy_table);
+    free(X_in_set_S);
     return S;
 }
 
