@@ -44,7 +44,7 @@ vector<vector<struct X> > algo_main(Graph& g){
     vector<vector<struct X> > A, B, S;
     init_strategy(A);
     init_strategy(B);
-    double prev_best_A=0;
+    double prev_best_A=diffusion(A, g);
     double cost_A = get_group_cost(A);
     bool* X_in_set_A = (bool*) malloc(g.U_LENGTH*sizeof(bool));
     memset(X_in_set_A, false, g.U_LENGTH * sizeof(bool)); // for clearing previous record
