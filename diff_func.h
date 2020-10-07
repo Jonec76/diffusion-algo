@@ -8,8 +8,8 @@
 #include "graph.h"
 
 using namespace std;
-double diffusion(vector<vector<struct X> > Strategy, int , Graph& g);
-double diffusion_greedy(vector<vector<struct X> > Strategy, int sam_size, Graph& g);
+double diffusion(vector<vector<struct X> > Strategy, Graph& g);
+double diffusion_greedy(vector<vector<struct X> > Strategy, Graph& g);
 size_t get_positive_count(vector<vector<struct node*>*> positive_group);
 double get_contagion(int);
 void migrate(vector<node*>*, vector<node*>*, struct node*);

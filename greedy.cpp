@@ -55,7 +55,7 @@ vector<vector<struct X> > algo_greedy(Graph& g){
     while((cost_A < budget) && has_candidate(diff_greedy_table, g.U_LENGTH)){
         start = clock();
         vector<struct X> C;
-        calc_greedy(g, A, prev_best_A, cost_A, &diff_greedy_table, X_in_set_A, sample_size);
+        calc_greedy(g, A, prev_best_A, cost_A, &diff_greedy_table, X_in_set_A);
         PSPD_greedy(g, A, &diff_greedy_table, &X_in_set_A, &prev_best_A);
         cost_A = get_group_cost(A);
         end = clock();

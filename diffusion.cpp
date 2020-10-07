@@ -8,7 +8,7 @@ using namespace std;
 
 extern size_t sample_size, period_T;
 
-double diffusion(vector<vector<struct X> > Strategy, int sam_size, Graph& g){
+double diffusion(vector<vector<struct X> > Strategy, Graph& g){
     long double f = 0;
     srand(time(0));
     for(size_t i=0;i<sample_size;i++){
@@ -49,7 +49,7 @@ double diffusion(vector<vector<struct X> > Strategy, int sam_size, Graph& g){
     return f/(double)sample_size;
 }
 
-double diffusion_greedy(vector<vector<struct X> > Strategy, int sam_size, Graph& g){
+double diffusion_greedy(vector<vector<struct X> > Strategy, Graph& g){
     size_t f = 0;
     srand(time(0));
     for(size_t i=0;i<sample_size;i++){

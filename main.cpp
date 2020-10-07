@@ -55,7 +55,7 @@ vector<vector<struct X> > algo_main(Graph& g){
     while((cost_A < budget) && has_candidate(diff_baseline_table, g.U_LENGTH)){
         start = clock();
         vector<struct X> C;
-        calc_main(g, A, prev_best_A, cost_A, &diff_baseline_table, X_in_set_A, sample_size);
+        calc_main(g, A, prev_best_A, cost_A, &diff_baseline_table, X_in_set_A);
         PSPD_main(g, A, &diff_baseline_table, &X_in_set_A, &prev_best_A);
         cost_A = get_group_cost(A);
         end = clock();

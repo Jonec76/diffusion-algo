@@ -36,7 +36,7 @@ double get_group_cost(vector<vector<struct X> >& group){
     }
     return cost;
 }
-void calc_greedy(Graph& g, vector<vector<struct X> >& A, double prev_best_A, double cost_A, double* diff_greedy_table[], bool X_in_set_A[], int sam_size){
+void calc_greedy(Graph& g, vector<vector<struct X> >& A, double prev_best_A, double cost_A, double* diff_greedy_table[], bool X_in_set_A[]){
     int one_dim_idx=0;
     for(size_t i=0;i<g.U.size();i++){ // each X_t in U;
         for(size_t j=0;j<g.U[i].size();j++){ // each X in X_t
@@ -54,13 +54,13 @@ void calc_greedy(Graph& g, vector<vector<struct X> >& A, double prev_best_A, dou
                 continue;
             }
             tmpA[u_X.t].push_back(u_X);
-            (*diff_greedy_table)[one_dim_idx] = diffusion_greedy(tmpA, sample_size, g) - prev_best_A;
+            (*diff_greedy_table)[one_dim_idx] = diffusion_greedy(tmpA, g) - prev_best_A;
             one_dim_idx++;
         }
     }
 }
 
-void calc_main(Graph& g, vector<vector<struct X> >& A, double prev_best_A, double cost_A, double* diff_main_table[], bool X_in_set_A[], int sam_size){
+void calc_main(Graph& g, vector<vector<struct X> >& A, double prev_best_A, double cost_A, double* diff_main_table[], bool X_in_set_A[]){
     int one_dim_idx=0;
     for(size_t i=0;i<g.U.size();i++){ // each X_t in U;
         for(size_t j=0;j<g.U[i].size();j++){ // each X in X_t
@@ -78,7 +78,7 @@ void calc_main(Graph& g, vector<vector<struct X> >& A, double prev_best_A, doubl
                 continue;
             }
             tmpA[u_X.t].push_back(u_X);
-            (*diff_main_table)[one_dim_idx] = diffusion(tmpA, sample_size, g) - prev_best_A;
+            (*diff_main_table)[one_dim_idx] = diffusion(tmpA, g) - prev_best_A;
             one_dim_idx++;
         }
     }
