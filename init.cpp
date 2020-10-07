@@ -23,10 +23,16 @@ vector<struct el> level_table = {el0, el1, el2, el3};
 const char* RESULT_DIR = "./result/";
 const char* GRAPH_DIR = "./covid_data/";
 char OUTPUT_FILE[50];
+char MIPC_OUTPUT_FILE[50];
 
 char GRAPH_PATH [50];
-size_t sample_size = 1, period_T=10;
+char MIPC_GRAPH_PATH [50];
+size_t sample_size = 1, period_T=3;
 double budget = 10;
+
+double A_END  = 0;
+double THETA  = 0;
+int TARGET_V  = 0;
 
 void init_node(Graph& g, vector<char*>& input_line){
     struct node* n = (struct node*)malloc(sizeof(struct node));
@@ -143,6 +149,10 @@ void set_config(char* argv, const char* file_name){
             continue;
         }else if(strcmp(type, "c") == 0){
             get_split_data(input_line, data, ",");
+            strncpy(GRAPH_PATH, input_line[0], 50);
+            sample_size = atoi(input_line[1]);
+            budget = atof(input_line[2]);
+            period_T = atoi(input_line[3]);
         }
     }
     
@@ -182,6 +192,49 @@ void set_config(char* argv, const char* file_name){
     fprintf (pFile, "%-15s :%s\n%-15s :%s\n%-15s :%s\n%-15s :%s\n","Graph file: ", input_line[0], "Sample size ", input_line[1], "Budget ", input_line[2], "T", input_line[3]);
     fprintf (pFile, "=======================================================\n");
     fclose (pFile);
-    
-    printf ("%-15s :%s\n%-15s :%s\n%-15s :%s\n%-15s :%s\n","Graph file ", input_line[0], "Sample size ", input_line[1], "Budget ", input_line[2], "T", input_line[3]);
+    fclose (fp_config);
 }
+
+void set_mipc_config(char* argv, const char* file_name){
+    FILE *fp_config = fopen(argv, "r");
+    if (fp_config == NULL) {
+        printf("Failed to open file %s.", argv);
+        exit(EXIT_FAILURE);
+    }
+    
+    char *line = NULL;
+    size_t len = 0;
+    vector<char*>input_line;
+    
+    while ((getline(&line, &len, fp_config)) != -1) {
+        char* type = strtok(line, " ");
+        char* data = strtok(NULL, " ");
+        if(strcmp(type, "#") == 0){
+            continue;
+        }else if(strcmp(type, "m") == 0){
+            get_split_data(input_line, data, ",");
+            strncpy(GRAPH_PATH, input_line[0], 50);
+            A_END  = atof(input_line[1]);
+            THETA  = atof(input_line[2]);
+            period_T = atoi(input_line[3]);
+            TARGET_V  = atoi(input_line[4]);
+        }
+    }
+    
+    strcat(MIPC_GRAPH_PATH, GRAPH_DIR);
+    strcat(MIPC_GRAPH_PATH, input_line[0]);
+
+    strncpy(MIPC_OUTPUT_FILE, RESULT_DIR, 10);
+    strcat(MIPC_OUTPUT_FILE, file_name);
+    FILE* pFile = fopen (MIPC_OUTPUT_FILE, "a");
+    if (pFile == NULL) {
+        printf("Failed to open file %s.", argv);
+        exit(EXIT_FAILURE);
+    }
+    fprintf (pFile, "=======================================================\n");
+    fprintf (pFile, "%-15s %s\n%-15s %s\n%-15s %s\n%-15s %s\n","Graph path: ", input_line[0], "Sample size: ", input_line[1], "Budget: ", input_line[2], "T:", input_line[3]);
+    fprintf (pFile, "=======================================================\n");
+    fclose (pFile);
+    fclose (fp_config);
+}
+

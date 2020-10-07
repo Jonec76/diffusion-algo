@@ -1,6 +1,8 @@
 #ifndef INIT_H
 #define INIT_H
+#include "graph.h"
 
+void set_mipc_config(char* argv, const char* file_name);
 void set_config(char* argv, const char* file_name);
 void init_node(Graph& g, vector<char*>& input_line);
 void init_edge(Graph& g, vector<char*>& input_line);

@@ -45,6 +45,7 @@ double Graph::get_contagion(int type){
 
 void Graph::print_node(){
     for(size_t i=0;i<N.size();i++){
+        cout<<i<<": ";
         switch (N[i]->stage){
             case Stage::ailing:
                 cout<<"ailing\n";
