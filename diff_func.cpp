@@ -13,6 +13,14 @@ string title[6] = {"susceptible", "infected", "ailing", "threatened", "dead", "r
 double alpha_f=0.944, alpha_g=0.5, param_c=2; 
 extern vector<struct el> level_table;
 
+size_t get_positive_count(vector<vector<struct node*>*> positive_group){
+    size_t ctr = 0;
+    for(size_t i=0;i<positive_group.size();i++){
+        ctr += positive_group[i]->size();
+    }
+    return ctr;
+}
+
 void print_group(vector<vector<struct node*>*> v) {
     cout<<"\n";
     for (size_t i = 0; i < v.size(); i++) {

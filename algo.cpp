@@ -36,14 +36,12 @@ double get_group_cost(vector<vector<struct X> >& group){
     }
     return cost;
 }
-
-
-void calc_baseline(Graph& g, vector<vector<struct X> >& A, double prev_best_A, double cost_A, double* diff_baseline_table[], bool X_in_set_A[], int sam_size){
+void calc_greedy(Graph& g, vector<vector<struct X> >& A, double prev_best_A, double cost_A, double* diff_greedy_table[], bool X_in_set_A[], int sam_size){
     int one_dim_idx=0;
     for(size_t i=0;i<g.U.size();i++){ // each X_t in U;
         for(size_t j=0;j<g.U[i].size();j++){ // each X in X_t
             if(X_in_set_A[one_dim_idx]){
-                (*diff_baseline_table)[one_dim_idx] = has_in_set;
+                (*diff_greedy_table)[one_dim_idx] = has_in_set;
                 one_dim_idx++;
                 continue;
             }
@@ -51,64 +49,43 @@ void calc_baseline(Graph& g, vector<vector<struct X> >& A, double prev_best_A, d
             struct X u_X = g.U[i][j];
             vector<vector<struct X> > tmpA = A;
             if(cost_A + get_X_cost(u_X) > budget){
-                (*diff_baseline_table)[one_dim_idx] = out_of_cost;
+                (*diff_greedy_table)[one_dim_idx] = out_of_cost;
                 one_dim_idx++;
                 continue;
             }
             tmpA[u_X.t].push_back(u_X);
-            (*diff_baseline_table)[one_dim_idx] = diffusion(tmpA, sample_size, g) - prev_best_A;
+            (*diff_greedy_table)[one_dim_idx] = diffusion_greedy(tmpA, sample_size, g) - prev_best_A;
             one_dim_idx++;
         }
     }
 }
 
-void PSPD_greedy(Graph& g, vector<vector<struct X> >& A, double* diff_baseline_table[], bool* X_in_set_A[], double* prev_best_A){
-    struct X best_X;
+void calc_main(Graph& g, vector<vector<struct X> >& A, double prev_best_A, double cost_A, double* diff_main_table[], bool X_in_set_A[], int sam_size){
     int one_dim_idx=0;
-    double max_value = -1;
-    int max_one_dim_idx = -1;
     for(size_t i=0;i<g.U.size();i++){ // each X_t in U;
         for(size_t j=0;j<g.U[i].size();j++){ // each X in X_t
-            double baseline_value = (*diff_baseline_table)[one_dim_idx];
-            struct X u_X = g.U[i][j];
-            if(baseline_value < 0){
+            if(X_in_set_A[one_dim_idx]){
+                (*diff_main_table)[one_dim_idx] = has_in_set;
                 one_dim_idx++;
                 continue;
             }
 
-            double baseline_denominator = 1;
-            if((baseline_value / baseline_denominator) > max_value){
-                best_X = u_X;
-                max_one_dim_idx = one_dim_idx;
-                max_value = (baseline_value / baseline_denominator);
+            struct X u_X = g.U[i][j];
+            vector<vector<struct X> > tmpA = A;
+            if(cost_A + get_X_cost(u_X) > budget){
+                (*diff_main_table)[one_dim_idx] = out_of_cost;
+                one_dim_idx++;
+                continue;
             }
+            tmpA[u_X.t].push_back(u_X);
+            (*diff_main_table)[one_dim_idx] = diffusion(tmpA, sample_size, g) - prev_best_A;
             one_dim_idx++;
         }
     }
-    if(max_one_dim_idx == -1)return;
-    A[best_X.t].push_back(best_X);
+}
 
-    FILE * pFile;
-    pFile = fopen (OUTPUT_FILE, "a");
-    if (pFile == NULL) {
-        printf("Failed to open file %s.", OUTPUT_FILE);
-        exit(EXIT_FAILURE);
-    }
-    fprintf (pFile, "\n%-15s :%f\n%-15s :%f\n%-15s :%f\n%-15s :%d_%d_%d\n%-15s :","greedy: ",  (*diff_baseline_table)[max_one_dim_idx], "F(A U {X}, T)", ((*diff_baseline_table)[max_one_dim_idx] + *prev_best_A), "F(A, T)", *prev_best_A, "X_t_id_OneDim", best_X.t, best_X.id, max_one_dim_idx, "A Strategies");
-    int tmp_idx = 0;
-    for(size_t i=0;i<A.size();i++){
-        for(size_t j=0;j<A[i].size();j++){
-            fprintf (pFile, "%d_%d ", A[i][j].t, A[i][j].id);
-            tmp_idx++;
-        }
-    }
-    fprintf(pFile, "\n");
-    fclose (pFile);
-
-    (*X_in_set_A)[max_one_dim_idx] = true;
-    *prev_best_A = *prev_best_A + (*diff_baseline_table)[max_one_dim_idx];
-
-    // TODO: Candidate set
+void PSPD_greedy(Graph& g, vector<vector<struct X> >& A, double* diff_greedy_table[], bool* X_in_set_A[], double* prev_best_A){
+    // TODO: PSPD_greedy
 }
 
 
