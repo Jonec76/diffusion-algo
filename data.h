@@ -1,6 +1,8 @@
 #ifndef DATA_H
 #define DATA_H
 
+#define a_v 0.4
+
 #define w_S 1
 #define w_I 1
 #define w_R 1

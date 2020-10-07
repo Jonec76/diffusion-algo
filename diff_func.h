@@ -1,6 +1,6 @@
 #ifndef FUNC_H
 #define FUNC_H
-#define a_v 0.4
+
 
 #include<vector>
 #include<iostream>

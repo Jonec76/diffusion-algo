@@ -177,8 +177,9 @@ void set_config(char* argv, const char* file_name){
     tmp += input_line[3];
 
     regex reg(".txt");
+    regex nl("\n");
     tmp = regex_replace(tmp, reg, "");
-
+    tmp = regex_replace(tmp, nl, "");
     tmp += ".txt"; 
 
     strcpy(OUTPUT_FILE, tmp.c_str());
@@ -224,15 +225,38 @@ void set_mipc_config(char* argv, const char* file_name){
     strcat(MIPC_GRAPH_PATH, GRAPH_DIR);
     strcat(MIPC_GRAPH_PATH, input_line[0]);
 
-    strncpy(MIPC_OUTPUT_FILE, RESULT_DIR, 10);
-    strcat(MIPC_OUTPUT_FILE, file_name);
+    string tmp = RESULT_DIR;
+    // For cleaning string
+
+    tmp += file_name;
+    tmp += "_";
+    tmp += input_line[0]; 
+    tmp += "_"; 
+    tmp += input_line[1];
+    tmp += "_"; 
+    tmp += input_line[2];
+    tmp += "_"; 
+    tmp += input_line[3];
+    tmp += "_"; 
+    tmp += input_line[4];
+
+    regex reg(".txt");
+    regex nl("\n");
+    tmp = regex_replace(tmp, reg, "");
+    tmp = regex_replace(tmp, nl, "");
+    tmp += ".txt"; 
+    cout<<tmp<<"??";
+
+    strcpy(MIPC_OUTPUT_FILE, tmp.c_str());
+
+
     FILE* pFile = fopen (MIPC_OUTPUT_FILE, "a");
     if (pFile == NULL) {
         printf("Failed to open file %s.", argv);
         exit(EXIT_FAILURE);
     }
     fprintf (pFile, "=======================================================\n");
-    fprintf (pFile, "%-15s %s\n%-15s %s\n%-15s %s\n%-15s %s\n","Graph path: ", input_line[0], "Sample size: ", input_line[1], "Budget: ", input_line[2], "T:", input_line[3]);
+    fprintf (pFile, "%-15s :%s\n%-15s :%s\n%-15s :%s\n%-15s :%s\n%-15s :%s\n","Graph path ", input_line[0], "A end ", input_line[1], "Theta ", input_line[2], "T", input_line[3], "Start node", input_line[4]);
     fprintf (pFile, "=======================================================\n");
     fclose (pFile);
     fclose (fp_config);
