@@ -46,6 +46,7 @@ void init_node(Graph& g, vector<char*>& input_line){
     n->params.healing_fromA = atof(input_line[7]);
     n->params.healing_fromT = atof(input_line[8]);
     n->params.death = atof(input_line[9]);
+    n->a_v = atof(input_line[10]);
     g.N.push_back(n);
 }
 

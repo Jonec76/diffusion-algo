@@ -14,7 +14,6 @@ extern double THETA ;
 extern int TARGET_V ;
 extern vector<struct el> level_table;
 
-
 vector<vector<X> > S;
 
 char get_s(Stage s);
@@ -39,7 +38,7 @@ int main(int argc, char** argv){
     algo_mipc(g, TARGET_V, THETA, infection_path);
 
     size_t t=2;
-    cout<<h_prob(infection_path, t, g.U, g);
+    cout<<h_prob(infection_path, t, g.U, g, TARGET_V);
 }
 
 // Because parameters get a random value between 0~1
@@ -244,11 +243,11 @@ char get_s(Stage s){
     }
 }
 
-double h_prob(vector<vector<Path>> infection_path, size_t h_t, vector<vector<X> > S, Graph& g){
+double h_prob(vector<vector<Path>> infection_path, size_t h_t, vector<vector<X> > S, Graph& g, int TARGET_V){
     double AIP=1;
 
     if(h_t == 0)
-        return a_v;
+        return g.N[TARGET_V]->a_v;
 
     vector<vector<Path>> infection_path_t;
     for(size_t i=0;i<infection_path.size();i++){

@@ -6,6 +6,5 @@
 # graph_path will read the file in the subdirectory "./covid_data/"
 c graph_4_T=10.txt,5,15,10
 
-# TODO: a_v
 # graph_path,A_END,theta,T(period time),v(node)
 m test_graph.txt,0.5,0,4,0
