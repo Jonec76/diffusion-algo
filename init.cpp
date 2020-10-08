@@ -149,19 +149,15 @@ void set_config(char* argv, const char* file_name){
             continue;
         }else if(strcmp(type, "c") == 0){
             get_split_data(input_line, data, ",");
-            strncpy(GRAPH_PATH, input_line[0], 50);
             sample_size = atoi(input_line[1]);
             budget = atof(input_line[2]);
             period_T = atoi(input_line[3]);
+            break;
         }
     }
     
     strcat(GRAPH_PATH, GRAPH_DIR);
     strcat(GRAPH_PATH, input_line[0]);
-
-    sample_size = atoi(input_line[1]);
-    budget = atof(input_line[2]);
-    period_T = atoi(input_line[3]);
 
     string tmp = RESULT_DIR;
     // For cleaning string
@@ -219,6 +215,7 @@ void set_mipc_config(char* argv, const char* file_name){
             THETA  = atof(input_line[2]);
             period_T = atoi(input_line[3]);
             TARGET_V  = atoi(input_line[4]);
+            break;
         }
     }
     
@@ -245,7 +242,6 @@ void set_mipc_config(char* argv, const char* file_name){
     tmp = regex_replace(tmp, reg, "");
     tmp = regex_replace(tmp, nl, "");
     tmp += ".txt"; 
-    cout<<tmp<<"??";
 
     strcpy(MIPC_OUTPUT_FILE, tmp.c_str());
 

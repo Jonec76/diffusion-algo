@@ -38,7 +38,8 @@ int main(int argc, char** argv){
     g.N[TARGET_V]->stage = Stage::infected; // To be removed;
     algo_mipc(g, TARGET_V, THETA, infection_path);
 
-    h_prob(infection_path, period_T, g.U, g);
+    size_t t=2;
+    cout<<h_prob(infection_path, t, g.U, g);
 }
 
 // Because parameters get a random value between 0~1
@@ -243,40 +244,38 @@ char get_s(Stage s){
     }
 }
 
-double h_prob(vector<vector<Path>> infection_path, size_t T, vector<vector<X> > S, Graph& g){
-    double A_END = 0;
+double h_prob(vector<vector<Path>> infection_path, size_t h_t, vector<vector<X> > S, Graph& g){
     double AIP=1;
 
-    if(period_T == 0)
-        return A_END;
+    if(h_t == 0)
+        return a_v;
 
     vector<vector<Path>> infection_path_t;
     for(size_t i=0;i<infection_path.size();i++){
         // period + 1: If period=3 means we want |path|=3, but this condition will only add the path whose len=2
-        if(infection_path[i].size() == period_T+1)
+        if(infection_path[i].size() == h_t+1)
             infection_path_t.push_back(infection_path[i]);
     }
 
-    if(S.size() < period_T){
+    if(S.size() < h_t){
         printf("Wrong strategies set sizes");
         return 0;
     }
-
     for(size_t i=0;i<infection_path_t.size();i++){
         vector<Path> path = infection_path_t[i];
-        double success = path[period_T].path_prob;
-
+        double success = path[h_t].path_prob;
         // t >= 1: the reason for setting this lower bound is we'll take two nodes at one iteration.
         // infection_path_t[T-1] will be affected by quarantine strategy (first day)
-        for(int t=period_T;t>=1;t--){
+        for(int t=h_t;t>=1;t--){
             int u_today = path[t].neighbor, u_next_day = path[t-1].neighbor;
 
             // // Strategies starts from 0 to period_T-1, but the infection path traverse with the reverse order.
-            g.set_node_lv(S[period_T - t]); 
+            g.set_node_lv(S[h_t - t]); 
 
             // For debuging each edge level (set level value with the max level after comparing from two nodes).
             // printf("today:%d(level=%d) , next day: %d(level=%d) |", u_today, g.N[u_today]->q_level, u_next_day, g.N[u_next_day]->q_level);
             double remove_prob = max(level_table[g.N[u_today]->q_level].remove_p, level_table[g.N[u_next_day]->q_level].remove_p);
+            
             success *= (1 - remove_prob);
         }
         AIP *= (1-success);
