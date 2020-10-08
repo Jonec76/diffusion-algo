@@ -6,7 +6,7 @@
 2. 執行 greedy 演算法 => `./greedy config.txt`</br>
    執行 main 演算法(目前只能找出 A ) => `./main config.txt`</br>
    執行 diffusion 演算法 => `./diffusion config.txt`
-   - config.txt 的 T 應該跟圖裡頭 X 最大的天數策略相同
+   - config.txt 的 T 應該比圖裡頭 X 最大的天數策略還要大
 
 
 ## 備註
