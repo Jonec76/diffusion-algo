@@ -30,6 +30,23 @@ double get_group_cost(vector<vector<struct X> >& group){
     return cost;
 }
 
+
+bool has_candidate_A(double* diff_baseline_table, int U_LENGTH){
+    bool stop = true;
+    for(int i=0;i<U_LENGTH;i++){
+        stop &= (diff_baseline_table[i] < 0);
+    }
+    return !stop;
+}
+
+double get_group_cost(vector<struct X>& group){
+    double cost = 0;
+    for(size_t t=0;t<group.size();t++){
+        cost += get_X_cost(group[t]);
+    }
+    return cost;
+}
+
 void init_strategy(vector<vector<struct X> >& s){
     for(size_t i=0;i<period_T;i++){
         vector<struct X> x_t;
@@ -104,8 +121,15 @@ void init_positive_group(vector<vector<struct node> >& p){
         p.push_back(tmp);
     }
 }
+void one_to_two_dim(vector<struct X> & A, vector<vector<struct X>> & A_two_dim){
+    init_strategy(A_two_dim);
+    for(size_t i=0;i<A.size();i++){
+        struct X tmp = A[i];
+        A_two_dim[tmp.t].push_back(tmp);
+    }
+}
 
-void calc_main(Graph& g, vector<vector<struct X> >& A, double prev_best_A, double cost_A, double* diff_main_table[], bool X_in_set_A[]){
+void calc_main_A(Graph& g, vector<struct X>& A, double prev_best_A, double cost_A, double* diff_main_table[], bool X_in_set_A[]){
     int one_dim_idx=0;
     for(size_t i=0;i<g.U.size();i++){ // each X_t in U;
         for(size_t j=0;j<g.U[i].size();j++){ // each X in X_t
@@ -116,7 +140,8 @@ void calc_main(Graph& g, vector<vector<struct X> >& A, double prev_best_A, doubl
             }
 
             struct X u_X = g.U[i][j];
-            vector<vector<struct X> > tmpA = A;
+            vector<vector<struct X> > tmpA;
+            one_to_two_dim(A, tmpA);
             if(cost_A + get_X_cost(u_X) > budget){
                 (*diff_main_table)[one_dim_idx] = out_of_cost;
                 one_dim_idx++;
@@ -129,17 +154,22 @@ void calc_main(Graph& g, vector<vector<struct X> >& A, double prev_best_A, doubl
     }
 }
 
-void PSPD_main(Graph& g, vector<vector<struct X> >& A, double* diff_baseline_table[], bool* X_in_set_A[], double* prev_best_A){
+double IR(){
+    return 0.5;
+}
+
+void PSPD_main_A(Graph& g, vector<struct X>& A, double* diff_baseline_table[], bool* X_in_set_A[], double* prev_best_A){
     struct X best_X;
-    int one_dim_idx=0;
+    int one_dim_idx_A=0;
     double max_value = -1;
     int max_one_dim_idx = -1;
+
     for(size_t i=0;i<g.U.size();i++){ // each X_t in U;
         for(size_t j=0;j<g.U[i].size();j++){ // each X in X_t
-            double baseline_value = (*diff_baseline_table)[one_dim_idx];
+            double baseline_value = (*diff_baseline_table)[one_dim_idx_A];
             struct X u_X = g.U[i][j];
             if(baseline_value < 0){
-                one_dim_idx++;
+                one_dim_idx_A++;
                 continue;
             }
 
@@ -148,14 +178,14 @@ void PSPD_main(Graph& g, vector<vector<struct X> >& A, double* diff_baseline_tab
             assert(denominator != 0);
             if((baseline_value / denominator) > max_value){
                 best_X = u_X;
-                max_one_dim_idx = one_dim_idx;
+                max_one_dim_idx = one_dim_idx_A;
                 max_value = (baseline_value / denominator);
             }
-            one_dim_idx++;
+            one_dim_idx_A++;
         }
     }
     if(max_one_dim_idx == -1)return;
-    A[best_X.t].push_back(best_X);
+    A.push_back(best_X);
 
     FILE * pFile;
     pFile = fopen (OUTPUT_FILE, "a");
@@ -165,25 +195,14 @@ void PSPD_main(Graph& g, vector<vector<struct X> >& A, double* diff_baseline_tab
     }
     fprintf (pFile, "\n%-15s :%f\n%-15s :%f\n%-15s :%f\n%-15s :%f\n%-15s :%d_%d_%d\n%-15s :","main: ",  max_value, "F(A U {X}, T)", ((*diff_baseline_table)[max_one_dim_idx] + *prev_best_A), "F(A, T)", *prev_best_A, "/ phi * C(D)", (level_table[best_X.lv].phi_cost * best_X.cost), "X_t_id_OneDim", best_X.t, best_X.id, max_one_dim_idx, "A Strategies");
     int tmp_idx = 0;
+
     for(size_t i=0;i<A.size();i++){
-        for(size_t j=0;j<A[i].size();j++){
-            fprintf (pFile, "%d_%d ", A[i][j].t, A[i][j].id);
-            tmp_idx++;
-        }
+        fprintf (pFile, "%d_%d ", A[i].t, A[i].id);
+        tmp_idx++;
     }
     fprintf(pFile, "\n");
-    fclose (pFile);
+    fclose(pFile);
 
     (*X_in_set_A)[max_one_dim_idx] = true;
     *prev_best_A = *prev_best_A + (*diff_baseline_table)[max_one_dim_idx];
-
-    // TODO: Candidate set
-}
-
-bool has_candidate(double* diff_baseline_table, int U_LENGTH){
-    bool stop = true;
-    for(int i=0;i<U_LENGTH;i++){
-        stop &= (diff_baseline_table[i] < 0);
-    }
-    return !stop;
 }

@@ -14,6 +14,7 @@ extern double budget;
 extern char GRAPH_PATH[50];
 extern char OUTPUT_FILE[30];
 clock_t total_start, total_end;
+void get_list_A(vector<struct X> & A, Graph& g);
 
 int main(int argc, char **argv){
     total_start = clock();
@@ -37,31 +38,38 @@ int main(int argc, char **argv){
     fprintf(pFile, "\n------------------------\n");
     fprintf(pFile, "Total time : %fs\n", (double)((total_end - total_start) / CLOCKS_PER_SEC));
     fclose(pFile);
+    return 0;
 }
 
-vector<vector<struct X> > algo_main(Graph& g){
-    printf("Start main algorithm ..\n\n");
-    vector<vector<struct X> > A, B, S;
-    init_strategy(A);
-    init_strategy(B);
-    double prev_best_A=diffusion(A, g);
+void algo_main(Graph& g){
+    vector<struct X> A, B;
+    int i=0, j=-1;
+    double cost_B = get_group_cost(B);
+    get_list_A(A, g);
+}
+
+void get_list_A(vector<struct X> & A, Graph& g){
+    printf("Start get A algorithm ..\n\n");
+    vector<vector<struct X> > A_two_dim;
+    one_to_two_dim(A, A_two_dim);
+
+    double prev_best_A=diffusion(A_two_dim, g);
     double cost_A = get_group_cost(A);
+
     bool* X_in_set_A = (bool*) malloc(g.U_LENGTH*sizeof(bool));
     memset(X_in_set_A, false, g.U_LENGTH * sizeof(bool)); // for clearing previous record
     double* diff_baseline_table = (double*) malloc(g.U_LENGTH*sizeof(double));
     memset(diff_baseline_table, 0, g.U_LENGTH * sizeof(double)); // for clearing previous record
     size_t iter = 0;
     clock_t start, end;
-    while((cost_A < budget) && has_candidate(diff_baseline_table, g.U_LENGTH)){
+    while((cost_A < budget) && has_candidate_A(diff_baseline_table, g.U_LENGTH)){
         start = clock();
-        vector<struct X> C;
-        calc_main(g, A, prev_best_A, cost_A, &diff_baseline_table, X_in_set_A);
-        PSPD_main(g, A, &diff_baseline_table, &X_in_set_A, &prev_best_A);
+        calc_main_A(g, A, prev_best_A, cost_A, &diff_baseline_table, X_in_set_A);
+        PSPD_main_A(g, A, &diff_baseline_table, &X_in_set_A, &prev_best_A);
         cost_A = get_group_cost(A);
         end = clock();
         printf("[ Iter: %lu ] %fs\n", iter++, (double)((end - start) / CLOCKS_PER_SEC));
     }
     free(X_in_set_A);
     free(diff_baseline_table);
-    return S;
 }

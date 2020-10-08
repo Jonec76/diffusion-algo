@@ -1,6 +1,10 @@
 #ifndef DATA_H
 #define DATA_H
 
+#define delta_f 0.3
+#define delta_i 0.4
+#define delta_c 0.5
+
 #define w_S 1
 #define w_I 1
 #define w_R 1
