@@ -1,91 +1,43 @@
-#include <iostream>
-#include <vector>
-#include <stdlib.h>
-#include <assert.h> 
-#include "graph.h"
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
 #include "diff_func.h"
+#include "algo.h"
+#include "graph.h"
+#include "init.h"
+
 using namespace std;
+clock_t total_start, total_end;
 
-extern size_t sample_size, period_T;
+const char* NAME = "diffusion.txt";
+extern int sample_size;
+extern double budget;
+extern char GRAPH_PATH[50];
+extern char OUTPUT_FILE[30];
 
-double diffusion(vector<vector<struct X> > Strategy, Graph& g){
-    long double f = 0;
-    srand(time(0));
-    for(size_t i=0;i<sample_size;i++){
-        vector<struct node*>susceptible, infected, ailing, threatened, recovered, dead;
-        vector<vector<struct node*>*> total_group{&infected, &ailing, &threatened, &dead, &recovered}; 
-        vector<vector<struct node*>*> all_group{&susceptible, &infected, &ailing, &threatened, &dead, &recovered}; 
-        susceptible = g.N;
-        
-        for(size_t j=0;j<g.V;j++){ // Init stage
-            g.N[j]->stage = Stage::susceptible;
-            double r = (rand() % 100)/100.0; //here: 0;
-            if(r < a_v){
-                g.N[j]->stage = Stage::infected;
-                migrate(&susceptible, &infected, g.N[j]);
-            }
-        }
-        vector<vector<struct node*>*> positive_group{&infected, &ailing, &threatened};
-        vector<vector<struct node*>*> health_group{&susceptible, &infected, &recovered};
-        
-        assert(Strategy.size() == period_T);
-        
-        vector<struct node*> tmp_susceptible, tmp_infected, tmp_ailing, tmp_threatened, tmp_recovered, tmp_dead;
-        vector<vector<struct node*>*> tmp_group{&tmp_infected, &tmp_ailing, &tmp_threatened, &tmp_dead, &tmp_recovered};// Shall align the order of total_group 
-        for(size_t t=0;t<period_T;t++){// Quarantine
-            g.set_node_lv(Strategy[t]);
-            // ====check lv of overlap node (g.N[i]->q_level)===";
-            for(size_t i=0;i<positive_group.size();i++){ // infected, ailing, threatened
-                for(size_t j=0;j<positive_group[i]->size();j++){ // node of each group
-                    struct node* positive_v = positive_group[i]->at(j);
-                    infection_process(g, susceptible, tmp_infected, positive_v, Strategy[t]);
-                    self_transmission_process(positive_group, tmp_group, positive_v);
-                }
-            }
-            tmp_push_back(tmp_group, total_group);
-            f += objective_at_t(health_group, Strategy[t], g.V, g.N);
-        }
+int main(int argc, char **argv){
+    Graph g;
+    total_start = clock();
+    double F;
+    if(argc != 2){
+        printf("Wrong argument. Execution format: ./diffusion config.txt\n");
+        return 0;
     }
-    return f/(double)sample_size;
-}
+    set_config(argv[1], NAME);
+    create_graph(g, GRAPH_PATH);
 
-double diffusion_greedy(vector<vector<struct X> > Strategy, Graph& g){
-    size_t f = 0;
-    srand(time(0));
-    for(size_t i=0;i<sample_size;i++){
-        vector<struct node*>susceptible, infected, ailing, threatened, recovered, dead;
-        vector<vector<struct node*>*> total_group{&infected, &ailing, &threatened, &dead, &recovered}; 
-        vector<vector<struct node*>*> all_group{&susceptible, &infected, &ailing, &threatened, &dead, &recovered}; 
-        susceptible = g.N;
-        
-        for(size_t j=0;j<g.V;j++){ // Init stage
-            g.N[j]->stage = Stage::susceptible;
-            double r = (rand() % 100)/100.0; //here: 0;
-            if(r < a_v){
-                g.N[j]->stage = Stage::infected;
-                migrate(&susceptible, &infected, g.N[j]);
-            }
-        }
-        vector<vector<struct node*>*> positive_group{&infected, &ailing, &threatened};
-        
-        vector<struct node*> tmp_susceptible, tmp_infected, tmp_ailing, tmp_threatened, tmp_recovered, tmp_dead;
-        vector<vector<struct node*>*> tmp_group{&tmp_infected, &tmp_ailing, &tmp_threatened, &tmp_dead, &tmp_recovered};// Shall align the order of total_group 
-        
-        assert(Strategy.size() == period_T);
+    //We use strategies to replace U set
+    F = diffusion(g.U, g);
+    total_end = clock();
 
-        for(size_t t=0;t<period_T;t++){// Quarantine
-            g.set_node_lv(Strategy[t]);
-            // ====check lv of overlap node (g.N[i]->q_level)===";
-            for(size_t i=0;i<positive_group.size();i++){ // infected, ailing, threatened
-                for(size_t j=0;j<positive_group[i]->size();j++){ // node of each group
-                    struct node* positive_v = positive_group[i]->at(j);
-                    infection_process(g, susceptible, tmp_infected, positive_v, Strategy[t]);
-                    self_transmission_process(positive_group, tmp_group, positive_v);
-                }
-            }
-            tmp_push_back(tmp_group, total_group);
-            f += get_positive_count(positive_group);
-        }
+    FILE * pFile;
+    pFile = fopen (OUTPUT_FILE, "a");
+    if (pFile == NULL) {
+        printf("Failed to open file %s.", OUTPUT_FILE);
+        exit(EXIT_FAILURE);
     }
-    return f/(double)sample_size;
+    printf("Total time : %fs", (double)((total_end - total_start) / CLOCKS_PER_SEC));
+    fprintf(pFile, "Total time      : %fs\n", (double)((total_end - total_start) / CLOCKS_PER_SEC));
+    fprintf(pFile, "Diffusion value : %f\n", F);
+    fclose(pFile);
 }

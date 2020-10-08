@@ -1,5 +1,5 @@
 # "#": for comment, the line behine it will be ignored.
-# "c": for instruction
+# "c": for main, greedy, diffusion instruction
 # "m": for mipc instruction
 
 # graph_path,sample_size,budget,T (period time)
