@@ -54,7 +54,7 @@ void init_edge(Graph& g, vector<char*>& input_line){
     g.addEdge(atoi(input_line[0]), atoi(input_line[1]), atof(input_line[2]));
 }
 
-void init_strategy(Graph& g, vector<char*>& input_line){
+void init_strategy_U(Graph& g, vector<char*>& input_line){
     struct X x;
     x.t = atoi(input_line[0]);
     assert((unsigned int)x.t < period_T);
@@ -79,6 +79,15 @@ void get_split_data(vector<char*>& input_line, char* data, char const data_delim
         token = strtok(NULL, data_delim);
     }
 }
+void init_strategy_one_dim_id(vector<vector<struct X>> U){
+    int one_dim_idx =0;
+    for(size_t i=0;i<U.size();i++){
+        for(size_t j=0;j<U[i].size();j++){
+            U[i][j].one_dim_id = one_dim_idx;
+            one_dim_idx++;
+        }
+    }
+}; 
 
 
 /**
@@ -114,13 +123,14 @@ void create_graph(Graph &g, const char* GRAPH_FILE) {
             init_node(g, input_line);
         }else if(strcmp(type, "X") == 0){
             get_split_data(input_line, data, "_");
-            init_strategy(g, input_line); // TODO
+            init_strategy_U(g, input_line); // TODO
         }else{
             cout<<"wrong input"<<endl;
         }
     }
     fclose(fp_graph);
     if (line) free(line);
+    init_strategy_one_dim_id(g.U);
 }
 
 

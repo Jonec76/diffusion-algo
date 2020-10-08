@@ -47,6 +47,13 @@ double get_group_cost(vector<struct X>& group){
     return cost;
 }
 
+vector<struct X> get_sublist(vector<struct X>& list, size_t i_day){
+    vector<struct X> sublist;
+    for(size_t i=0;i<i_day;i++)
+        sublist.push_back(list[i]);
+    return sublist;
+}
+
 void init_strategy(vector<vector<struct X> >& s){
     for(size_t i=0;i<period_T;i++){
         vector<struct X> x_t;
@@ -121,7 +128,8 @@ void init_positive_group(vector<vector<struct node> >& p){
         p.push_back(tmp);
     }
 }
-void one_to_two_dim(vector<struct X> & A, vector<vector<struct X>> & A_two_dim){
+vector<vector<struct X>> one_to_two_dim(vector<struct X> & A){
+    vector<vector<struct X>> A_two_dim;
     init_strategy(A_two_dim);
     for(size_t i=0;i<A.size();i++){
         struct X tmp = A[i];
@@ -140,8 +148,7 @@ void calc_main_A(Graph& g, vector<struct X>& A, double prev_best_A, double cost_
             }
 
             struct X u_X = g.U[i][j];
-            vector<vector<struct X> > tmpA;
-            one_to_two_dim(A, tmpA);
+            vector<vector<struct X> > tmpA = one_to_two_dim(A);
             if(cost_A + get_X_cost(u_X) > budget){
                 (*diff_main_table)[one_dim_idx] = out_of_cost;
                 one_dim_idx++;
@@ -158,7 +165,7 @@ double IR(){
     return 0.5;
 }
 
-void PSPD_main_A(Graph& g, vector<struct X>& A, double* diff_baseline_table[], bool* X_in_set_A[], double* prev_best_A){
+void PSPD_update_A(Graph& g, vector<struct X>& A, double* diff_baseline_table[], bool* X_in_set_A[], double* prev_best_A){
     struct X best_X;
     int one_dim_idx_A=0;
     double max_value = -1;
@@ -206,3 +213,132 @@ void PSPD_main_A(Graph& g, vector<struct X>& A, double* diff_baseline_table[], b
     (*X_in_set_A)[max_one_dim_idx] = true;
     *prev_best_A = *prev_best_A + (*diff_baseline_table)[max_one_dim_idx];
 }
+
+void PSPD_update_C(vector<struct X>& set_C, Graph& g, vector<struct X>& B, vector<struct X>& A, bool* X_in_set_B[], int i_day){
+    int one_dim_idx = 0;
+    for(size_t i=0;i<g.U.size();i++){ // each X_t in U;
+        for(size_t j=0;j<g.U[i].size();j++){ // each X in X_t
+            if(X_in_set_B[one_dim_idx]){
+                one_dim_idx++;
+                continue;
+            }
+
+            struct X u_X = g.U[i][j];
+            vector<struct X> tmpB = B;
+            vector<struct X> subA = get_sublist(A, i_day+1);
+            tmpB.push_back(u_X);
+            bool better_IR = IR() >= (1 - delta_i) * IR();
+            bool availabel_cost = get_group_cost(tmpB) <= min((1 + delta_c)* get_group_cost(subA), budget);
+            if(better_IR && availabel_cost){
+                set_C.push_back(u_X);
+            }
+        }
+    }
+}
+
+void cost_update_C(vector<struct X>& set_C, Graph& g, vector<struct X>& B, bool* X_in_set_B[]){
+    int one_dim_idx = 0;
+    for(size_t i=0;i<g.U.size();i++){ // each X_t in U;
+        for(size_t j=0;j<g.U[i].size();j++){ // each X in X_t
+            if(X_in_set_B[one_dim_idx]){
+                one_dim_idx++;
+                continue;
+            }
+            struct X u_X = g.U[i][j];
+            vector<struct X>  tmpB = B;
+            tmpB.push_back(u_X);
+
+            if(get_group_cost(tmpB) <= budget){
+                set_C.push_back(u_X);
+            }
+        }
+    }
+}
+
+void get_max_idx_from_C(int max_X_idx, vector<struct X>& B, vector<struct X>& set_C, Graph& g){
+    double max_F = -INT16_MAX;
+    vector<vector<struct X>>tmpB = one_to_two_dim(B);
+    for(size_t i=0;i<set_C.size();i++){
+        tmpB[set_C[i].t].push_back(set_C[i]);
+
+        double F = diffusion(tmpB, g);
+        if(max_F < F){
+            max_F = F;
+            max_X_idx = i;
+        }
+        //For removing current X
+        tmpB[set_C[i].t].pop_back();
+    }
+}
+
+                
+void migrate_strategy(vector<struct X>& B, vector<struct X>& set_C_i_next_day, int max_X_idx, bool* X_in_set_B[]){
+    B.push_back(set_C_i_next_day[max_X_idx]);
+    set_C_i_next_day.erase(set_C_i_next_day.begin() + max_X_idx);
+    (*X_in_set_B)[set_C_i_next_day[max_X_idx].one_dim_id] = true;
+}
+
+bool is_out_of_cost(vector<struct X>& B, vector<vector<struct X>>& U, bool* X_in_set_B[]){
+    int one_dim_idx = 0;
+    for(size_t i=0;i<U.size();i++){ // each X_t in U;
+        for(size_t j=0;j<U[i].size();j++){ // each X in X_t
+            if(X_in_set_B[one_dim_idx]){
+                one_dim_idx++;
+                continue;
+            }
+            struct X u_X = U[i][j];
+            vector<struct X> tmpB = B;    
+            tmpB.push_back(u_X);        
+            if(get_group_cost(tmpB) < budget){
+                return false;
+            }
+        }
+    }
+    return true;
+};
+
+void get_X_max_F(double* max_X_F, vector<struct X>& max_X_list, Graph& g){
+    double max_F = -INT16_MAX;
+    struct X max_X;
+    vector<vector<struct X>> tmpX;
+    init_strategy(tmpX);
+    for(size_t i=0;i<g.U.size();i++){ // each X_t in U;
+        for(size_t j=0;j<g.U[i].size();j++){ // each X in X_t
+            struct X u_X = g.U[i][j];
+            if(get_X_cost(u_X) <= budget){
+                tmpX[i].push_back(u_X);
+                double tmp_F = diffusion(tmpX, g);
+                if(tmp_F > max_F){
+                    max_F = tmp_F;
+                    max_X = u_X;
+                }
+                tmpX[i].clear();
+            }
+        }
+    }  
+    *max_X_F= max_F;
+    max_X_list.push_back(max_X);
+} 
+
+void get_argmax_strategy(vector<vector<struct X>> &S, vector<struct X>&A, vector<struct X>&B, Graph& g){
+    double max_A_F=0;
+    double max_B_F=0;
+    double max_X_F=0;
+    
+    vector<struct X> X_list;
+    max_A_F = diffusion(one_to_two_dim(A), g);
+    max_B_F = diffusion(one_to_two_dim(B), g);
+    get_X_max_F(&max_X_F, X_list, g);
+
+    // double max_strategy_F = max_A_F;
+    // vector<struct X> max_strategy_list = A;
+
+    // if(max_B_F > max_strategy_F)
+    //     max_strategy_list = B;
+    // if(max_X_F > max_strategy_F)
+    //     max_strategy_list = X_list;
+    
+    // max({max_A_F, max_B_F, max_X_F}); 
+    // Find max strategy
+}
+
