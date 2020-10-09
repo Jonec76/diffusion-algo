@@ -21,4 +21,5 @@ void tmp_push_back(vector<vector<struct node*>*>, vector<vector<struct node*>*>)
 void addEdge(vector<struct edge>*, int , int, double) ;
 void infection_process(Graph& g, vector<struct node*>& from, vector<struct node*>& to, struct node* v, vector<struct X> X_t);
 double objective_at_t(vector<vector<struct node*>*> health_group, vector<struct X> X_t, int v, vector<struct node*>& N);
+void get_quarantine_infect_rate(double* num, Graph& g, int t);
 #endif 

@@ -37,6 +37,7 @@ int main(int argc, char **argv){
         exit(EXIT_FAILURE);
     }
     printf("Total time : %fs", (double)((total_end - total_start) / CLOCKS_PER_SEC));
+    fprintf (pFile, "\n=======================================================\n");
     fprintf(pFile, "Total time      : %fs\n", (double)((total_end - total_start) / CLOCKS_PER_SEC));
     fprintf(pFile, "Diffusion value : %f\n", F);
     fclose(pFile);

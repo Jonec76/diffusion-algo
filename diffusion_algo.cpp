@@ -7,11 +7,12 @@
 using namespace std;
 
 extern size_t sample_size, period_T;
+extern char OUTPUT_FILE[30];
 
 double diffusion_full_result(vector<vector<struct X> > Strategy, Graph& g){
     long double f = 0;
     srand(time(0));
-    double R0_num[period_T] = {0}, susceptible_num[period_T] = {0},  infected_num[period_T] = {0}, ailing_num[period_T] = {0}, threatened_num[period_T] = {0}, recovered_num[period_T] = {0}, dead_num[period_T] = {0};
+    double R0_num[period_T] = {0}, quan_infect_rate[period_T] = {0}, susceptible_num[period_T] = {0},  infected_num[period_T] = {0}, ailing_num[period_T] = {0}, threatened_num[period_T] = {0}, recovered_num[period_T] = {0}, dead_num[period_T] = {0};
 
     for(size_t i=0;i<sample_size;i++){
         vector<struct node*>susceptible, infected, ailing, threatened, recovered, dead;
@@ -48,18 +49,46 @@ double diffusion_full_result(vector<vector<struct X> > Strategy, Graph& g){
             }
             tmp_push_back(tmp_group, total_group);
             f += objective_at_t(health_group, Strategy[t], g.V, g.N);
+            // 2)
             double IAT_num = get_positive_count(positive_group);
             double new_I_num = infected.size()-prev_I_num;
             prev_I_num = infected.size();
             R0_num[t] += (new_I_num / IAT_num);
+            
+            // 3)
+            susceptible_num[t] += susceptible.size();
+            infected_num[t] += infected.size();
+            ailing_num[t] += ailing.size();
+            threatened_num[t] += threatened.size();
+            dead_num[t] += dead.size();
+            recovered_num[t] += recovered.size();
+
+            // 4)
+            get_quarantine_infect_rate(&quan_infect_rate[t], g, t);
         }
+    }
+
+    FILE * pFile;
+    pFile = fopen (OUTPUT_FILE, "a");
+    if (pFile == NULL) {
+        printf("Failed to open file %s.", OUTPUT_FILE);
+        exit(EXIT_FAILURE);
     }
 
     // TODO: divide by sample size
     for(size_t t=0;t<period_T;t++){
         R0_num[t] /= sample_size;
-        cout<<R0_num[t]<<endl;
+        susceptible_num[t] /= sample_size;
+        infected_num[t] /= sample_size;
+        ailing_num[t] /= sample_size;
+        threatened_num[t] /= sample_size;
+        recovered_num[t] /= sample_size;
+        dead_num[t] /= sample_size;
+        quan_infect_rate[t] /= sample_size;
+        fprintf(pFile, "\n[t: %ld] \n", t);
+        fprintf (pFile, "%-15s :%f\n%-15s :%f\n%-15s :%f\n%-15s :%f\n%-15s :%f\n%-15s :%f\n%-15s :%f\n%-15s :%f\n","R0 ", R0_num[t], "susceptible ",  susceptible_num[t],"infected ",  infected_num[t],"ailing ",  ailing_num[t],"threatened ",  threatened_num[t],"recovered ",  recovered_num[t],"dead ",  dead_num[t], "隔離區的平均感染率 ", quan_infect_rate[t]);
     }
+    fclose(pFile);
 
     return f/(double)sample_size;
 }

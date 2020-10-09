@@ -199,3 +199,24 @@ double objective_at_t(vector<vector<struct node*>*> health_group, vector<struct 
     return alpha_f * f_t(health_group) - alpha_g * M_t(X_t) * pow(q, t);
 }
 
+            
+void get_quarantine_infect_rate(double* num, Graph& g, int t){
+    bool has_in_quarantine[g.V];
+    memset(has_in_quarantine, false, g.V * sizeof(bool)); 
+    double IAT_ctr = 0;
+    double denominator = 0;
+    vector<struct X> strategies_t = g.U[t];
+    for(size_t i=0;i<strategies_t.size();i++){
+        for(size_t d=0;d<strategies_t[i].D.size();d++){
+            int n = strategies_t[i].D[d];
+            if(has_in_quarantine[n] != true){
+                has_in_quarantine[n] = true;
+                denominator++;
+                if(g.N[n]->stage == Stage::infected || g.N[n]->stage == Stage::ailing || g.N[n]->stage == Stage::threatened){
+                    IAT_ctr++;
+                }
+            }
+        }
+    }
+    *num += IAT_ctr / denominator;
+}
