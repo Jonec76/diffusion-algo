@@ -9,6 +9,7 @@
 
 using namespace std;
 double diffusion(vector<vector<struct X> > Strategy, Graph& g);
+double diffusion_full_result(vector<vector<struct X> > Strategy, Graph& g);
 double diffusion_greedy(vector<vector<struct X> > Strategy, Graph& g);
 size_t get_positive_count(vector<vector<struct node*>*> positive_group);
 double get_contagion(int);

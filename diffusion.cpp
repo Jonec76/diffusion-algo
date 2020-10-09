@@ -27,7 +27,7 @@ int main(int argc, char **argv){
     create_graph(g, GRAPH_PATH);
 
     //We use strategies to replace U set
-    F = diffusion(g.U, g);
+    F = diffusion_full_result(g.U, g);
     total_end = clock();
 
     FILE * pFile;
