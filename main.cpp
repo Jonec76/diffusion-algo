@@ -2,6 +2,7 @@
 #include <string.h>
 #include <time.h>
 #include <cstdlib>
+#include <assert.h>
 #include "diff_func.h"
 #include "algo.h"
 #include "graph.h"
@@ -26,6 +27,23 @@ int main(int argc, char **argv){
     }
     set_config(argv[1], NAME);
     create_graph(g, GRAPH_PATH);
+    // vector<int> x;
+    // x.push_back(0);
+    // x.push_back(1);
+    // x.push_back(2);
+    // x.push_back(3);
+    // x.push_back(4);
+
+    // for(int i=0;i<x.size();i++){
+    //     if(x[i] > 2){
+    //         x.erase(x.begin() + i);
+    //         i--;
+    //     }
+    // }
+
+    // for(int i=0;i<x.size();i++){
+    //     cout<<x[i];
+    // }   
     algo_main(g);
     total_end = clock();
 
@@ -44,14 +62,35 @@ int main(int argc, char **argv){
 
 void algo_main(Graph& g){
     vector<struct X> A, B;
+
+    struct X null_X;
+    null_X.one_dim_id = -1;
+    null_X.t = -1;
+    null_X.cost = 0;
+    null_X.lv = -1;
+    null_X.id = -1;
+
+    B.push_back(null_X);
+
     int i=0, j=-1;
-    get_list_A(A, g);
+    // get_list_A(A, g);
+
+    A.push_back(null_X);
+    A.push_back(g.U[0][21]);
+    A.push_back(g.U[0][60]);
+    A.push_back(g.U[0][238]);
+    A.push_back(g.U[0][165]);
+    A.push_back(g.U[0][93]);
+    A.push_back(g.U[0][237]);
+    A.push_back(g.U[0][203]);
+    A.push_back(g.U[0][12]);
+    A.push_back(g.U[0][294]);
+
     get_list_B(B, A, g);
 }
 
 void get_list_A(vector<struct X> & A, Graph& g){
     printf("Start get A algorithm ..\n\n");
-
     double prev_best_A=diffusion(one_to_two_dim(A), g);
     double cost_A = get_group_cost(A);
 
@@ -71,55 +110,118 @@ void get_list_A(vector<struct X> & A, Graph& g){
     }
     free(X_in_set_A);
     free(diff_baseline_table);
+
+    struct X null_X;
+    null_X.one_dim_id = -1;
+    null_X.t = -1;
+    null_X.cost = 0;
+    null_X.lv = -1;
+    null_X.id = -1;
+    A.insert(A.begin(), null_X);
+    cout<<get_group_cost(A)<<" "<<budget;
+
 }
 
 void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
-    double cost_B = get_group_cost(B);
-    int i_day=0, j_day=-1;
-    size_t len_A = A.size();
+    int i_day=0, j_day=0;
+    
+    double cost_B = 0, cost_A = 0;
+
+    int len_A = A.size() -1; // For ignoring the first empty element.
     bool* X_in_set_B = (bool*) malloc(g.U_LENGTH*sizeof(bool));
     memset(X_in_set_B, false, g.U_LENGTH * sizeof(bool)); // for clearing previous record
     vector<vector<struct X>> set_C;
-    vector<struct X> empty;
-    set_C.push_back(empty);
-    while(cost_B < budget){
-        vector<struct X> set_i_next_day;
-        set_C.push_back(set_i_next_day);
-        if(i_day < len_A){
-            PSPD_update_C(set_C[i_day+1], g, B, A, &X_in_set_B, i_day);
+    bool A_finish_with_no_better_B = false;
+    int time = 0;
+    int iter = 0;
+    while(cost_B < budget && !A_finish_with_no_better_B){
+        cout<<"iter"<<iter++;
+        cout<<"=============\n";
+        vector<struct X> C_per_t ; // Not to insert null element
+        if(i_day+1 < len_A){
+            PSPD_get_C_i(C_per_t, g, B, A, &X_in_set_B, i_day);
         }else{
-            cost_update_C(set_C[i_day+1], g, B, &X_in_set_B);
+            cost_update_C(C_per_t, g, B, &X_in_set_B, i_day);
         }
-
-        if(set_C.size()!=0){
+        assert(i_day+1 > set_C.size());
+        if(C_per_t.size()!=0){
+            // argmax F, X belongs to "C"_i+1, where "C"_i+1 = C_per_t
             int max_X_idx_in_C;
-            get_max_idx_from_C(max_X_idx_in_C, B, set_C[i_day+1], g);
-            vector<struct X> tmpB = B;
-            tmpB.push_back(set_C[i_day+1][max_X_idx_in_C]);
-            double F_b = diffusion(one_to_two_dim(tmpB), g);
-            vector<struct X> sub_A = get_sublist(A, i_day+1);
-            double F_a = diffusion(one_to_two_dim(sub_A), g);
 
-            if(F_b >= (1 - delta_f)*F_a){
-                migrate_strategy(B, set_C[i_day+1], max_X_idx_in_C, &X_in_set_B);
-                i_day++;
+            // max_B_F = F("B"_i U {B_i+1})
+            double max_B_F;
+            get_max_idx_from_C(&max_B_F, &max_X_idx_in_C, B, C_per_t, g);
+            // F("A"_i+1)
+            vector<struct X> A_i;
+            if(i_day+1 < len_A){
+                A_i = get_sublist(A, i_day+1);
             }else{
-                // RCR
+                A_i = A;
+            }
+            double F_a = diffusion(one_to_two_dim(A_i), g);
+            // if(max_B_F >= (1 - delta_f)*F_a){
+            if(time < 3){
+                migrate_strategy(B, C_per_t, max_X_idx_in_C, &X_in_set_B);
+                set_C.push_back(C_per_t);
+                i_day++;
+                time++;
+            }else{
+                j_day = RCR(A, B, set_C, j_day, i_day, g, &X_in_set_B);
+                i_day = j_day;
+                cout<<"r:"<<i_day<<endl;
+                time = 0;
             }
         }else{
-            double F_b = diffusion(one_to_two_dim(B), g);
-            vector<struct X> sub_A = get_sublist(A, i_day+1);
-            double F_a = diffusion(one_to_two_dim(sub_A), g);
-            bool better_F = F_b > (1 - delta_f) * F_a;
-            bool X_out_of_cost = is_out_of_cost(B, g.U, &X_in_set_B);
+            // F("B"_i)
+            vector<struct X> B_i = get_sublist(B, i_day);
+            double F_b = diffusion(one_to_two_dim(B_i), g);
 
-            if(better_F || X_out_of_cost){
-                continue;
+            // F("A"_i+1)
+            vector<struct X> A_i;
+
+            if(i_day+1 < len_A){
+                A_i = get_sublist(A, i_day+1);
             }else{
+                A_i = A;
+            }
+            double F_a = diffusion(one_to_two_dim(A_i), g);
+
+            bool better_F = F_b > (1 - delta_f) * F_a;
+            bool X_out_of_cost = is_out_of_cost(B_i, g.U, &X_in_set_B);
+
+            if(X_out_of_cost){
+                if(i_day + 1 >= len_A){
+                    A_finish_with_no_better_B = true; // it must finishs this while loop
+                    continue;
+                }
+            }
+
+            if(better_F){
+                cost_update_C(C_per_t, g, B, &X_in_set_B, i_day);
+                int max_X_idx_in_C;
+
+                // max_B_F = F("B"_i U {B_i+1})
+                double F_b_nextday;
+                get_max_idx_from_C(&F_b_nextday, &max_X_idx_in_C, B_i, C_per_t, g);
+                if(F_b_nextday > F_b){
+                    migrate_strategy(B, C_per_t, max_X_idx_in_C, &X_in_set_B);
+                    set_C.push_back(C_per_t);
+                    i_day++;
+                }else if(i_day + 1 >= len_A){
+                    break;
+                }else{
+                    continue;
+                }
+            }else{
+                cout<<"RCR\n";
                 // RCR
             }
         }
+        cost_B = get_group_cost(B);
+        // cout<<set_C.size()<<"--"<<B.size()<<" "<<i_day;
+        print_list(B);
     }
-    vector<vector<struct X>> S;
-    get_argmax_strategy(S, A, B, g);
+    // vector<vector<struct X>> S;
+    // get_argmax_strategy(S, A, B, g);
+    free(X_in_set_B);
 }

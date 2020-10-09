@@ -12,11 +12,19 @@ extern size_t sample_size, period_T;
 extern double budget;
 
 double get_X_cost(struct X x_t){
+    if(x_t.id == -1)
+        return 0;
     if (x_t.lv == 0){
         return 1;
     }
     else{
         return level_table[x_t.lv].phi_cost * x_t.cost;
+    }
+}
+
+void print_list(vector<struct X> list){
+    for(size_t i=0;i<list.size();i++){
+        cout<<list[i].t<<" "<<list[i].id<<" "<<list[i].one_dim_id<<endl;
     }
 }
 
@@ -39,6 +47,7 @@ bool has_candidate_A(double* diff_baseline_table, int U_LENGTH){
     return !stop;
 }
 
+// this can handle the group with empty element
 double get_group_cost(vector<struct X>& group){
     double cost = 0;
     for(size_t t=0;t<group.size();t++){
@@ -48,10 +57,21 @@ double get_group_cost(vector<struct X>& group){
 }
 
 vector<struct X> get_sublist(vector<struct X>& list, size_t i_day){
+    assert(i_day >= 0);
     vector<struct X> sublist;
-    for(size_t i=0;i<i_day;i++)
+    for(size_t i=0;i<=i_day;i++)
         sublist.push_back(list[i]);
     return sublist;
+}
+
+//For C set, i_day+1 modify to i_day
+vector<struct X> get_candidate_i(vector<vector<struct X>> list, size_t i_day){
+    vector<struct X> empty;
+    if(i_day == 0)
+        return empty;
+    assert(i_day > 0);
+    i_day--;
+    return list[i_day];
 }
 
 void init_strategy(vector<vector<struct X> >& s){
@@ -133,6 +153,8 @@ vector<vector<struct X>> one_to_two_dim(vector<struct X> & A){
     init_strategy(A_two_dim);
     for(size_t i=0;i<A.size();i++){
         struct X tmp = A[i];
+        if(tmp.one_dim_id == -1)
+            continue;
         A_two_dim[tmp.t].push_back(tmp);
     }
     return A_two_dim;
@@ -167,7 +189,7 @@ double IR(){
 }
 
 double CR_diff(){
-    return 0.3;
+    return (rand()%100)/100.0;
 }
 
 void PSPD_update_A(Graph& g, vector<struct X>& A, double* diff_baseline_table[], bool* X_in_set_A[], double* prev_best_A){
@@ -219,84 +241,99 @@ void PSPD_update_A(Graph& g, vector<struct X>& A, double* diff_baseline_table[],
     *prev_best_A = *prev_best_A + (*diff_baseline_table)[max_one_dim_idx];
 }
 
-void PSPD_update_C(vector<struct X>& set_C, Graph& g, vector<struct X>& B, vector<struct X>& A, bool* X_in_set_B[], int i_day){
+void PSPD_get_C_i(vector<struct X>& C_per_t, Graph& g, vector<struct X>& B, vector<struct X>& A, bool* X_in_set_B[], int i_day){
     int one_dim_idx = 0;
+    
+    // c("B"i U {X})
+    vector<struct X> B_i = B;
+
+    // c("A"i+1)
+    vector<struct X> A_i = get_sublist(A, i_day+1);
+    double cost_subA = min((1 + delta_c)* get_group_cost(A_i), budget);
     for(size_t i=0;i<g.U.size();i++){ // each X_t in U;
         for(size_t j=0;j<g.U[i].size();j++){ // each X in X_t
-            if(X_in_set_B[one_dim_idx]){
+            if((*X_in_set_B)[one_dim_idx]){
                 one_dim_idx++;
                 continue;
             }
-
             struct X u_X = g.U[i][j];
-            vector<struct X> tmpB = B;
-            vector<struct X> subA = get_sublist(A, i_day+1);
-            tmpB.push_back(u_X);
-            bool better_IR = IR() >= (1 - delta_i) * IR();
-            bool availabel_cost = get_group_cost(tmpB) <= min((1 + delta_c)* get_group_cost(subA), budget);
+
+            B_i.push_back(u_X);
+            // bool better_IR = IR() >= (1 - delta_i) * IR();
+            bool better_IR = true;
+            bool availabel_cost = get_group_cost(B_i) <= cost_subA;
             if(better_IR && availabel_cost){
-                set_C.push_back(u_X);
+                C_per_t.push_back(u_X);
             }
+            B_i.clear();
+            one_dim_idx++;
         }
     }
+    cout<<"\n";
 }
 
-void cost_update_C(vector<struct X>& set_C, Graph& g, vector<struct X>& B, bool* X_in_set_B[]){
+void cost_update_C(vector<struct X>& set_C, Graph& g, vector<struct X>& B, bool* X_in_set_B[], int i_day){
     int one_dim_idx = 0;
+    vector<struct X> B_i = B;
+
     for(size_t i=0;i<g.U.size();i++){ // each X_t in U;
         for(size_t j=0;j<g.U[i].size();j++){ // each X in X_t
-            if(X_in_set_B[one_dim_idx]){
+            if((*X_in_set_B)[one_dim_idx]){
                 one_dim_idx++;
                 continue;
             }
             struct X u_X = g.U[i][j];
-            vector<struct X>  tmpB = B;
-            tmpB.push_back(u_X);
-
-            if(get_group_cost(tmpB) <= budget){
+            B_i.push_back(u_X);
+            if(get_group_cost(B_i) <= budget){
                 set_C.push_back(u_X);
             }
+            B_i.pop_back();
+            one_dim_idx++;
         }
     }
 }
 
-void get_max_idx_from_C(int max_X_idx, vector<struct X>& B, vector<struct X>& set_C, Graph& g){
+void get_max_idx_from_C(double* max_B_F, int* max_X_idx, vector<struct X>& B_i, vector<struct X>& set_C, Graph& g){
     double max_F = -INT16_MAX;
-    vector<vector<struct X>>tmpB = one_to_two_dim(B);
+
+    vector<vector<struct X>>tmpB = one_to_two_dim(B_i);
     for(size_t i=0;i<set_C.size();i++){
         tmpB[set_C[i].t].push_back(set_C[i]);
-
         double F = diffusion(tmpB, g);
         if(max_F < F){
             max_F = F;
-            max_X_idx = i;
+            *max_X_idx = i;
         }
         //For removing current X
         tmpB[set_C[i].t].pop_back();
     }
+    *max_B_F = max_F;
 }
 
                 
-void migrate_strategy(vector<struct X>& B, vector<struct X>& set_C_i_next_day, int max_X_idx, bool* X_in_set_B[]){
-    B.push_back(set_C_i_next_day[max_X_idx]);
-    set_C_i_next_day.erase(set_C_i_next_day.begin() + max_X_idx);
-    (*X_in_set_B)[set_C_i_next_day[max_X_idx].one_dim_id] = true;
+void migrate_strategy(vector<struct X>& B, vector<struct X>& C_per_t, int max_X_idx_in_C, bool* X_in_set_B[]){
+    (*X_in_set_B)[C_per_t[max_X_idx_in_C].one_dim_id] = true;
+    B.push_back(C_per_t[max_X_idx_in_C]);
+    C_per_t.erase(C_per_t.begin() + max_X_idx_in_C);
 }
 
 bool is_out_of_cost(vector<struct X>& B, vector<vector<struct X>>& U, bool* X_in_set_B[]){
     int one_dim_idx = 0;
+    vector<struct X> tmpB = B;
     for(size_t i=0;i<U.size();i++){ // each X_t in U;
         for(size_t j=0;j<U[i].size();j++){ // each X in X_t
-            if(X_in_set_B[one_dim_idx]){
+            if((*X_in_set_B)[one_dim_idx]){
                 one_dim_idx++;
                 continue;
             }
             struct X u_X = U[i][j];
-            vector<struct X> tmpB = B;    
             tmpB.push_back(u_X);        
             if(get_group_cost(tmpB) < budget){
+                one_dim_idx++;
                 return false;
             }
+            tmpB.pop_back();        
+            one_dim_idx++;
         }
     }
     return true;
@@ -357,17 +394,28 @@ void update_softmax_value(vector<struct CRObj>& c_obj_list){
         e_denominator += exp(c_obj_list[i].diff);
 
     for(size_t i=0;i<c_obj_list.size();i++)
-        c_obj_list[i].softmax_value = exp(c_obj_list[i].diff) / e_denominator;
+        c_obj_list[i].softmax_value = exp(c_obj_list[i].diff) /e_denominator;
     
 }
 
-void clear_list_before_k(vector<struct X>& B, bool* X_in_set_B[], size_t k_day, int U_LENGTH){
+void clear_list_after_k(vector<struct X>& B, vector<vector<struct X>>& C, bool* X_in_set_B[], size_t k_day, int U_LENGTH){
+    assert(B.size() == C.size()+1);
     memset((*X_in_set_B), false, U_LENGTH * sizeof(bool));
     for(size_t i=0;i<B.size();i++){
-        if(i < k_day){
-            *X_in_set_B[B[i].one_dim_id] = true;
+        if(B[i].id == -1)
+            continue;
+        if(i <= k_day-1){ // remains the list before k-1 day(include)
+            (*X_in_set_B)[B[i].one_dim_id] = true;
         }else{
             B.erase(B.begin() + i);
+            i--;
+        }
+    }
+    for(size_t i=0;i<C.size();i++){
+        if(i < k_day){ // C[0] means 1st day candidates, so kth day candidates means we should keep the list before C[k-1]
+            continue;
+        }else{
+            C.erase(C.begin() + i);
             i--;
         }
     }
@@ -375,55 +423,81 @@ void clear_list_before_k(vector<struct X>& B, bool* X_in_set_B[], size_t k_day, 
 
 // Notice the length of B & C is i, not i+1
 size_t RCR(vector<struct X>& A, vector<struct X>& B,vector<vector<struct X>>& C, int j_day, int i_day, Graph& g, bool* X_in_set_B[]){
-    assert(j_day < i_day);
+    // assert(j_day < i_day);
     vector<struct CRObj> c_obj_list;
-    srand(time(0));
-    
-    for(int k=j_day+1;k<=i_day;k++){
-        if(C[k].size() == 0)
+
+    bool X_in_set_C[g.U_LENGTH];
+    memset(X_in_set_C, false, g.U_LENGTH * sizeof(bool));
+
+    // k starts from 1
+    for(size_t k=j_day+1;k<=i_day;k++){
+        vector<struct X> A_i = get_sublist(A, k);
+        vector<struct X> B_i = get_sublist(B, k-1);
+        vector<struct X> C_i = get_candidate_i(C, k);
+        // cout<<"A"<<endl;
+        // print_list(A_i);
+        // cout<<"B"<<endl;
+        // print_list(B_i);
+        // cout<<"C"<<endl;
+        // print_list(C_i);
+
+
+        if(C_i.size() == 0)
             continue;
-        for(size_t ck=0;ck<C[k].size();ck++){
-            vector<struct X> tmpA = get_sublist(A, k+1);
-            vector<struct X> tmpB = get_sublist(B, k);
-            tmpB.push_back(C[k][ck]);
-            if(diffusion(one_to_two_dim(tmpB), g) < (1 - delta_f) * diffusion(one_to_two_dim(tmpA), g)){
-                C.erase(C.begin() + ck);
-                ck--;
+        srand(time(0));
+
+        for(size_t x=0;x<C_i.size();x++){
+            B_i.push_back(C_i[x]);
+            if(diffusion(one_to_two_dim(B_i), g) < (1 - delta_f) * diffusion(one_to_two_dim(A_i), g)){
+                C_i.erase(C_i.begin() + x);
+                x--;
             }else{
-                struct CRObj c_obj;
-                c_obj.c_X = C[k][ck];
-                c_obj.k_day = k;
-                c_obj.diff = CR_diff();
-                c_obj_list.push_back(c_obj);
+                if(!X_in_set_C[C_i[x].one_dim_id]){
+                    X_in_set_C[C_i[x].one_dim_id] = true;
+                    struct CRObj c_obj;
+                    c_obj.c_X = C_i[x];
+                    c_obj.k_day = k;
+                    c_obj.diff = x / (double)C_i.size();
+                    c_obj_list.push_back(c_obj);
+                }
             }
+            B_i.pop_back();
         }
     }
 
     update_softmax_value(c_obj_list);
+
     if(c_obj_list.size()!=0){
         bool find_redisign_C = false;
         while(!find_redisign_C){
-            int rand_idx = (rand() % c_obj_list.size()); //here: 0;
+            // int rand_idx = (rand() % c_obj_list.size()); //here: 0;
+            int rand_idx = 9; //here: 0;
             double rand_r = (rand() % 100) / 100.0;
+
             if(rand_r < c_obj_list[rand_idx].softmax_value){
                 find_redisign_C = true;
-
                 // Not yet implement removing element from C_l, but I think it's not really necessary to do it?
                 // Becaurse j+1 will never less than l
-                clear_list_before_k(B, X_in_set_B, c_obj_list[rand_idx].k_day, g.U_LENGTH);
+                int l = c_obj_list[rand_idx].k_day; // keep the list before C_x_k(include k) and remove list after day k.
+                clear_list_after_k(B, C, X_in_set_B, l, g.U_LENGTH);
                 B.push_back(c_obj_list[rand_idx].c_X);
-                *X_in_set_B[c_obj_list[rand_idx].c_X.one_dim_id] = true;
-                return B.size();
+                (*X_in_set_B)[c_obj_list[rand_idx].c_X.one_dim_id] = true;
+                assert(C.size()+1 == B.size());
+                assert(l == C.size());
+                // cout<<l<<"~~"<<C.size()<<"--"<<B.size()<<" "<<i_day<<endl;
+                return l;
             }
         }
-    }else{
-        // vector<struct X> set;
-        // C.push_back(set);
-        // // Notice that X_in_set_B.i+1 day true ? false ?
-        // cost_update_C(C[C.size()-1], g, B, X_in_set_B);
-        // for(size_t i=0;i<C[C.size()-1].size();i++){
-        //     // Find argmax B
-        // }
     }
+    // }else{
+    //     // vector<struct X> set;
+    //     // C.push_back(set);
+    //     // // Notice that X_in_set_B.i+1 day true ? false ?
+    //     // cost_update_C(C[C.size()-1], g, B, X_in_set_B);
+    //     // for(size_t i=0;i<C[C.size()-1].size();i++){
+    //     //     // Find argmax B
+    //     // }
+    // }
+    return 0;
 }
 

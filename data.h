@@ -72,10 +72,10 @@ struct X{
     int id;
     int one_dim_id;
     double cost;
-    vector<int>D; // Should be sorted during init level.
     int t;
     int lv;
     double eta; // -1 for not given eta value
+    vector<int>D; // Should be sorted during init level.
 };
 
 struct CRObj{

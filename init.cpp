@@ -79,7 +79,7 @@ void get_split_data(vector<char*>& input_line, char* data, char const data_delim
         token = strtok(NULL, data_delim);
     }
 }
-void init_strategy_one_dim_id(vector<vector<struct X>> U){
+void init_strategy_one_dim_id(vector<vector<struct X>>& U){
     int one_dim_idx =0;
     for(size_t i=0;i<U.size();i++){
         for(size_t j=0;j<U[i].size();j++){
