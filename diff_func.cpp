@@ -206,6 +206,10 @@ void get_quarantine_infect_rate(double* num, Graph& g, int t){
     double IAT_ctr = 0;
     double denominator = 0;
     vector<struct X> strategies_t = g.U[t];
+    if(strategies_t.size() == 0){
+        *num += -1;
+        return;
+    }
     for(size_t i=0;i<strategies_t.size();i++){
         for(size_t d=0;d<strategies_t[i].D.size();d++){
             int n = strategies_t[i].D[d];
@@ -218,5 +222,6 @@ void get_quarantine_infect_rate(double* num, Graph& g, int t){
             }
         }
     }
+    assert(denominator != 0);
     *num += IAT_ctr / denominator;
 }
