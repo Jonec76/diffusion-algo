@@ -24,4 +24,5 @@ vector<struct X> get_sublist(vector<struct X>& list, size_t i_day);
 void migrate_strategy(vector<struct X>& B, vector<struct X>& set_C_i_next_day, int max_X_idx, bool* X_in_set_B[]);
 bool is_out_of_cost(vector<struct X>& B, vector<vector<struct X>>& U, bool* X_in_set_B[]);
 void get_X_max_F(double* X_max_F, vector<struct X>& X_max, Graph& g);
+void get_argmax_strategy(vector<vector<struct X>> &S, vector<struct X>&A, vector<struct X>&B, Graph& g);
 #endif

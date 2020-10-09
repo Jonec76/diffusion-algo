@@ -77,4 +77,11 @@ struct X{
     int lv;
     double eta; // -1 for not given eta value
 };
+
+struct CRObj{
+    struct X c_X;
+    double diff;
+    int k_day;
+    double softmax_value;
+};
 #endif
