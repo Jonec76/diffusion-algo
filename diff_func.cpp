@@ -122,6 +122,18 @@ bool remove_edge(struct node* v, struct node* u){
         return true;
 }
 
+bool remove_edge(struct node* v, struct node* u, vector<struct el> level_table_opt){
+    // printf("v: %d, neighbor_u: %d", v->id, u->id);
+    int q_max_level = max(v->q_level, u->q_level);
+    double remove_p = level_table_opt[q_max_level].remove_p;
+    double r = (rand() % 100)/100.0;
+    // cout<<"remove_edge_p: "<<remove_p<<" < "<<r<<endl;
+    if(remove_p < r)
+        return false;
+    else
+        return true;
+}
+
 // Only v.stage==I, A, T will enter into this function.
 void infection_process(Graph& g, vector<struct node*>& from, vector<struct node*>& to, struct node* v, vector<struct X> X_t) {
     // set quarantine state
@@ -129,6 +141,27 @@ void infection_process(Graph& g, vector<struct node*>& from, vector<struct node*
         struct node* u = g.N[g.adj[v->id][i].neighbor]; // the neighbor of V
         if(u->stage == Stage::susceptible){
             if(!remove_edge(v, u)){
+                double p = g.get_edge_prob(u, v) * u->params.contagion;
+                double r = (rand() % 100) / 100.0;
+                if (v->stage== Stage::infected)
+                    p *= u->params.relative;
+                if (r < p) {
+                    u->stage = Stage::infected;
+                    migrate(&from, &to, u);
+                }
+            }
+        }
+    }
+    // modify stage
+    // undo quarantine state
+}
+
+void infection_process(Graph& g, vector<struct node*>& from, vector<struct node*>& to, struct node* v, vector<struct X> X_t, vector<struct el> level_table_opt) {
+    // set quarantine state
+    for(size_t i=0;i<g.adj[v->id].size();i++){
+        struct node* u = g.N[g.adj[v->id][i].neighbor]; // the neighbor of V
+        if(u->stage == Stage::susceptible){
+            if(!remove_edge(v, u, level_table_opt)){
                 double p = g.get_edge_prob(u, v) * u->params.contagion;
                 double r = (rand() % 100) / 100.0;
                 if (v->stage== Stage::infected)

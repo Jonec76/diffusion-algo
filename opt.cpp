@@ -19,6 +19,8 @@ extern char GRAPH_PATH[50];
 extern char OUTPUT_FILE[30];
 clock_t total_start, total_end;
 void opt(Graph &g, const char* GRAPH_FILE);
+struct el opt_el0, opt_el1 = {0.5, 0.5}, opt_el2 = {1, 1};
+vector<struct el> level_table_opt = {opt_el0, opt_el1, opt_el2};
 
 int main(int argc, char **argv){
     Graph g;
@@ -87,7 +89,7 @@ void opt(Graph &g, const char* GRAPH_FILE) {
             init_strategy(g, input_line);
         }else if(strcmp(type, "*") == 0){
             double compare = 0;
-            compare = diffusion(g.U, g);
+            compare = diffusion(g.U, g, level_table_opt);
             if (compare > max){
                 max = compare;
                 max_index = index;
