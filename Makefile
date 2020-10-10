@@ -4,12 +4,12 @@ CC = g++
 .PHONY : clean
 
 OBJS := init.o diff_func.o diffusion_algo.o graph.o algo.o
-TARGETS := main greedy mipc diffusion
+TARGETS := main greedy mipc diffusion opt
 
 all:$(TARGETS)
-$(TARGETS): $(OBJS) main.cpp greedy.cpp mipc.cpp diffusion.cpp
+$(TARGETS): $(OBJS) main.cpp greedy.cpp mipc.cpp diffusion.cpp opt.cpp
 	g++ -o $@ $@.cpp $(OBJS) $(CFLAGS) 
 %.o: %.cpp *.h
 	$(CC) -o $@ -c $< $(CFLAGS)
 clean:
-	rm *.o main greedy mipc diffusion
+	rm *.o main greedy mipc diffusion opt

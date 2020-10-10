@@ -4,7 +4,8 @@
 
 # graph_path,sample_size,budget,T (period time)
 # graph_path will read the file in the subdirectory "./covid_data/"
-c graph_4_T=10.txt,5,15,10
+# c graph_4_T=1.txt,5,15,10
+c OPTgraph_T=1.txt,5,15,10
 
 # graph_path,A_END,theta,T(period time),v(node)
 m test_graph.txt,0.5,0,4,0
