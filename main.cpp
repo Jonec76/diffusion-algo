@@ -72,19 +72,19 @@ void algo_main(Graph& g){
 
     B.push_back(null_X);
 
-    int i=0, j=-1;
-    // get_list_A(A, g);
+    get_list_A(A, g);
 
-    A.push_back(null_X);
-    A.push_back(g.U[0][21]);
-    A.push_back(g.U[0][60]);
-    A.push_back(g.U[0][238]);
-    A.push_back(g.U[0][165]);
-    A.push_back(g.U[0][93]);
-    A.push_back(g.U[0][237]);
-    A.push_back(g.U[0][203]);
-    A.push_back(g.U[0][12]);
-    A.push_back(g.U[0][294]);
+
+    // A.push_back(null_X);
+    // A.push_back(g.U[0][21]);
+    // A.push_back(g.U[0][60]);
+    // A.push_back(g.U[0][238]);
+    // A.push_back(g.U[0][165]);
+    // A.push_back(g.U[0][93]);
+    // A.push_back(g.U[0][237]);
+    // A.push_back(g.U[0][203]);
+    // A.push_back(g.U[0][12]);
+    // A.push_back(g.U[0][294]);
 
     get_list_B(B, A, g);
 }
@@ -118,32 +118,26 @@ void get_list_A(vector<struct X> & A, Graph& g){
     null_X.lv = -1;
     null_X.id = -1;
     A.insert(A.begin(), null_X);
-    cout<<get_group_cost(A)<<" "<<budget;
-
 }
 
 void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
     int i_day=0, j_day=0;
     
-    double cost_B = 0, cost_A = 0;
+    double cost_B = 0;
 
     int len_A = A.size() -1; // For ignoring the first empty element.
     bool* X_in_set_B = (bool*) malloc(g.U_LENGTH*sizeof(bool));
     memset(X_in_set_B, false, g.U_LENGTH * sizeof(bool)); // for clearing previous record
     vector<vector<struct X>> set_C;
     bool A_finish_with_no_better_B = false;
-    int time = 0;
-    int iter = 0;
     while(cost_B < budget && !A_finish_with_no_better_B){
-        cout<<"iter"<<iter++;
-        cout<<"=============\n";
         vector<struct X> C_per_t ; // Not to insert null element
         if(i_day+1 < len_A){
             PSPD_get_C_i(C_per_t, g, B, A, &X_in_set_B, i_day);
         }else{
             cost_update_C(C_per_t, g, B, &X_in_set_B, i_day);
         }
-        assert(i_day+1 > set_C.size());
+        assert(i_day+1 > (int)set_C.size());
         if(C_per_t.size()!=0){
             // argmax F, X belongs to "C"_i+1, where "C"_i+1 = C_per_t
             int max_X_idx_in_C;
@@ -159,17 +153,17 @@ void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
                 A_i = A;
             }
             double F_a = diffusion(one_to_two_dim(A_i), g);
-            // if(max_B_F >= (1 - delta_f)*F_a){
-            if(time < 3){
+
+            if(max_B_F >= (1 - delta_f)*F_a){
                 migrate_strategy(B, C_per_t, max_X_idx_in_C, &X_in_set_B);
-                set_C.push_back(C_per_t);
+                set_C.push_back(C_per_t);// C_i -> C_i+1
                 i_day++;
-                time++;
             }else{
+                // RCR: 1. trim list C 
+                //      2. C_i -> C_i+1
+                cout<<"RCR"<<endl;
                 j_day = RCR(A, B, set_C, j_day, i_day, g, &X_in_set_B);
                 i_day = j_day;
-                cout<<"r:"<<i_day<<endl;
-                time = 0;
             }
         }else{
             // F("B"_i)
@@ -214,14 +208,16 @@ void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
                 }
             }else{
                 cout<<"RCR\n";
+                j_day = RCR(A, B, set_C, j_day, i_day, g, &X_in_set_B);
+                i_day = j_day;
                 // RCR
             }
         }
         cost_B = get_group_cost(B);
-        // cout<<set_C.size()<<"--"<<B.size()<<" "<<i_day;
-        print_list(B);
+        // print_list(B);
     }
-    // vector<vector<struct X>> S;
-    // get_argmax_strategy(S, A, B, g);
+
+    vector<vector<struct X>> S;
+    get_argmax_strategy(S, A, B, g);
     free(X_in_set_B);
 }

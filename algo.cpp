@@ -269,7 +269,6 @@ void PSPD_get_C_i(vector<struct X>& C_per_t, Graph& g, vector<struct X>& B, vect
             one_dim_idx++;
         }
     }
-    cout<<"\n";
 }
 
 void cost_update_C(vector<struct X>& set_C, Graph& g, vector<struct X>& B, bool* X_in_set_B[], int i_day){
@@ -372,6 +371,12 @@ void get_argmax_strategy(vector<vector<struct X>> &S, vector<struct X>&A, vector
     max_B_F = diffusion(one_to_two_dim(B), g);
     get_X_max_F(&max_X_F, X_list, g);
 
+    cout<<"A: "<<max_A_F<<endl;
+    print_list(A);
+    cout<<"B: "<<max_B_F<<endl;
+    print_list(B);
+    cout<<"X: "<<max_X_F<<endl;
+    print_list(X_list);
 
     if(max_A_F > max_B_F){
         if(max_A_F > max_X_F){
@@ -430,17 +435,10 @@ size_t RCR(vector<struct X>& A, vector<struct X>& B,vector<vector<struct X>>& C,
     memset(X_in_set_C, false, g.U_LENGTH * sizeof(bool));
 
     // k starts from 1
-    for(size_t k=j_day+1;k<=i_day;k++){
+    for(int k=j_day+1;k<=i_day;k++){
         vector<struct X> A_i = get_sublist(A, k);
         vector<struct X> B_i = get_sublist(B, k-1);
         vector<struct X> C_i = get_candidate_i(C, k);
-        // cout<<"A"<<endl;
-        // print_list(A_i);
-        // cout<<"B"<<endl;
-        // print_list(B_i);
-        // cout<<"C"<<endl;
-        // print_list(C_i);
-
 
         if(C_i.size() == 0)
             continue;
@@ -467,7 +465,8 @@ size_t RCR(vector<struct X>& A, vector<struct X>& B,vector<vector<struct X>>& C,
 
     update_softmax_value(c_obj_list);
 
-    if(c_obj_list.size()!=0){
+    // if(c_obj_list.size()!=0){
+    if(false){
         bool find_redisign_C = false;
         while(!find_redisign_C){
             // int rand_idx = (rand() % c_obj_list.size()); //here: 0;
@@ -483,21 +482,25 @@ size_t RCR(vector<struct X>& A, vector<struct X>& B,vector<vector<struct X>>& C,
                 B.push_back(c_obj_list[rand_idx].c_X);
                 (*X_in_set_B)[c_obj_list[rand_idx].c_X.one_dim_id] = true;
                 assert(C.size()+1 == B.size());
-                assert(l == C.size());
+                assert(l == (int)C.size());
                 // cout<<l<<"~~"<<C.size()<<"--"<<B.size()<<" "<<i_day<<endl;
                 return l;
             }
         }
+    }else{
+        vector<struct X> C_per_t ;
+        // Notice that X_in_set_B.i+1 day true ? false ?
+        cost_update_C(C_per_t, g, B, X_in_set_B, i_day);
+        int max_X_idx_in_C;
+
+        // max_B_F = F("B"_i U {B_i+1})
+        double max_B_F;
+        get_max_idx_from_C(&max_B_F, &max_X_idx_in_C, B, C_per_t, g);
+        migrate_strategy(B, C_per_t, max_X_idx_in_C, X_in_set_B);
+        C.push_back(C_per_t);// C_i -> C_i+1
+
+        return i_day+1;
     }
-    // }else{
-    //     // vector<struct X> set;
-    //     // C.push_back(set);
-    //     // // Notice that X_in_set_B.i+1 day true ? false ?
-    //     // cost_update_C(C[C.size()-1], g, B, X_in_set_B);
-    //     // for(size_t i=0;i<C[C.size()-1].size();i++){
-    //     //     // Find argmax B
-    //     // }
-    // }
     return 0;
 }
 
