@@ -2,6 +2,7 @@
 #include <string.h>
 #include "diff_func.h"
 #include "graph.h"
+#include "mipc.h"
 #include <assert.h>
 #include <math.h>
 using namespace std;
@@ -57,8 +58,12 @@ double get_group_cost(vector<struct X>& group){
 }
 
 vector<struct X> get_sublist(vector<struct X>& list, size_t i_day){
-    assert(i_day >= 0);
     vector<struct X> sublist;
+    if(list.size() <= i_day){
+        sublist = list;
+        return sublist;
+    };
+    assert(i_day >= 0);
     for(size_t i=0;i<=i_day;i++)
         sublist.push_back(list[i]);
     return sublist;
@@ -66,6 +71,7 @@ vector<struct X> get_sublist(vector<struct X>& list, size_t i_day){
 
 //For C set, i_day+1 modify to i_day
 vector<struct X> get_candidate_i(vector<vector<struct X>> list, size_t i_day){
+    assert(list.size() >= i_day);
     vector<struct X> empty;
     if(i_day == 0)
         return empty;
@@ -184,14 +190,6 @@ void calc_main_A(Graph& g, vector<struct X>& A, double prev_best_A, double cost_
     }
 }
 
-double IR(){
-    return 0.5;
-}
-
-double CR_diff(){
-    return (rand()%100)/100.0;
-}
-
 void PSPD_update_A(Graph& g, vector<struct X>& A, double* diff_baseline_table[], bool* X_in_set_A[], double* prev_best_A){
     struct X best_X;
     int one_dim_idx_A=0;
@@ -250,6 +248,10 @@ void PSPD_get_C_i(vector<struct X>& C_per_t, Graph& g, vector<struct X>& B, vect
     // c("A"i+1)
     vector<struct X> A_i = get_sublist(A, i_day+1);
     double cost_subA = min((1 + delta_c)* get_group_cost(A_i), budget);
+    struct X a_X = A_i[i_day+1];
+    vector<struct X> A_list = get_sublist(A, i_day);
+    double IR_A_i_1 = (1 - delta_i) * IR(a_X, one_to_two_dim(A_list), g);
+
     for(size_t i=0;i<g.U.size();i++){ // each X_t in U;
         for(size_t j=0;j<g.U[i].size();j++){ // each X in X_t
             if((*X_in_set_B)[one_dim_idx]){
@@ -257,10 +259,9 @@ void PSPD_get_C_i(vector<struct X>& C_per_t, Graph& g, vector<struct X>& B, vect
                 continue;
             }
             struct X u_X = g.U[i][j];
-
+            
+            bool better_IR = IR(u_X, one_to_two_dim(B_i), g) >= (1 - delta_i) * IR_A_i_1;
             B_i.push_back(u_X);
-            // bool better_IR = IR() >= (1 - delta_i) * IR();
-            bool better_IR = true;
             bool availabel_cost = get_group_cost(B_i) <= cost_subA;
             if(better_IR && availabel_cost){
                 C_per_t.push_back(u_X);
@@ -373,10 +374,15 @@ void get_argmax_strategy(vector<vector<struct X>> &S, vector<struct X>&A, vector
 
     cout<<"A: "<<max_A_F<<endl;
     print_list(A);
+    cout<<"cost: "<<get_group_cost(A)<<"\n============\n";
+
     cout<<"B: "<<max_B_F<<endl;
     print_list(B);
+    cout<<"cost: "<<get_group_cost(B)<<"\n============\n";
+
     cout<<"X: "<<max_X_F<<endl;
     print_list(X_list);
+    cout<<"cost: "<<get_group_cost(X_list)<<"\n============\n";
 
     if(max_A_F > max_B_F){
         if(max_A_F > max_X_F){
@@ -398,6 +404,7 @@ void update_softmax_value(vector<struct CRObj>& c_obj_list){
     for(size_t i=0;i<c_obj_list.size();i++)
         e_denominator += exp(c_obj_list[i].diff);
 
+    assert(e_denominator != 0);
     for(size_t i=0;i<c_obj_list.size();i++)
         c_obj_list[i].softmax_value = exp(c_obj_list[i].diff) /e_denominator;
     
@@ -426,6 +433,7 @@ void clear_list_after_k(vector<struct X>& B, vector<vector<struct X>>& C, bool* 
     }
 }
 
+// i_day starts from 0, i_day means to redesign B[i_day+2] element
 // Notice the length of B & C is i, not i+1
 size_t RCR(vector<struct X>& A, vector<struct X>& B,vector<vector<struct X>>& C, int j_day, int i_day, Graph& g, bool* X_in_set_B[]){
     // assert(j_day < i_day);
@@ -433,13 +441,13 @@ size_t RCR(vector<struct X>& A, vector<struct X>& B,vector<vector<struct X>>& C,
 
     bool X_in_set_C[g.U_LENGTH];
     memset(X_in_set_C, false, g.U_LENGTH * sizeof(bool));
-
     // k starts from 1
+
     for(int k=j_day+1;k<=i_day;k++){
         vector<struct X> A_i = get_sublist(A, k);
         vector<struct X> B_i = get_sublist(B, k-1);
         vector<struct X> C_i = get_candidate_i(C, k);
-
+ 
         if(C_i.size() == 0)
             continue;
         srand(time(0));
@@ -452,10 +460,15 @@ size_t RCR(vector<struct X>& A, vector<struct X>& B,vector<vector<struct X>>& C,
             }else{
                 if(!X_in_set_C[C_i[x].one_dim_id]){
                     X_in_set_C[C_i[x].one_dim_id] = true;
+                    vector<struct X> B_k = get_sublist(B, k);
+                    vector<struct X> B_list = get_sublist(B, k-1);
                     struct CRObj c_obj;
                     c_obj.c_X = C_i[x];
                     c_obj.k_day = k;
-                    c_obj.diff = x / (double)C_i.size();
+                    // CR=0: 
+                    //    case1. there's no any v[t1] in h_prob(), so h_prob() will return 1
+                    //           get_H_u will become 0 -> P_S_t=0 -> sum_value in CR = 0
+                    c_obj.diff = CR(C_i[x], one_to_two_dim(B_i), g) - CR(B_k[B_k.size()-1], one_to_two_dim(B_i), g);
                     c_obj_list.push_back(c_obj);
                 }
             }
@@ -463,14 +476,11 @@ size_t RCR(vector<struct X>& A, vector<struct X>& B,vector<vector<struct X>>& C,
         }
     }
 
-    update_softmax_value(c_obj_list);
-
-    // if(c_obj_list.size()!=0){
-    if(false){
+    if(c_obj_list.size()!=0){
+        update_softmax_value(c_obj_list);
         bool find_redisign_C = false;
         while(!find_redisign_C){
-            // int rand_idx = (rand() % c_obj_list.size()); //here: 0;
-            int rand_idx = 9; //here: 0;
+            int rand_idx = (rand() % c_obj_list.size()); //here: 0;
             double rand_r = (rand() % 100) / 100.0;
 
             if(rand_r < c_obj_list[rand_idx].softmax_value){
@@ -484,7 +494,7 @@ size_t RCR(vector<struct X>& A, vector<struct X>& B,vector<vector<struct X>>& C,
                 assert(C.size()+1 == B.size());
                 assert(l == (int)C.size());
                 // cout<<l<<"~~"<<C.size()<<"--"<<B.size()<<" "<<i_day<<endl;
-                return l;
+                return l-1;
             }
         }
     }else{
@@ -499,7 +509,7 @@ size_t RCR(vector<struct X>& A, vector<struct X>& B,vector<vector<struct X>>& C,
         migrate_strategy(B, C_per_t, max_X_idx_in_C, X_in_set_B);
         C.push_back(C_per_t);// C_i -> C_i+1
 
-        return i_day+1;
+        return i_day;
     }
     return 0;
 }
