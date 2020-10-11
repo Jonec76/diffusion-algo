@@ -104,7 +104,7 @@ void create_graph(Graph &g, const char* GRAPH_FILE) {
 
     char *line = NULL;
     size_t len = 0;
-
+    size_t x_nums = 0;
     while ((getline(&line, &len, fp_graph)) != -1) {
         char* type = strtok(line, " ");
         char* data = strtok(NULL, " ");
@@ -122,12 +122,16 @@ void create_graph(Graph &g, const char* GRAPH_FILE) {
             get_split_data(input_line, data, ",");
             init_node(g, input_line);
         }else if(strcmp(type, "X") == 0){
+            x_nums++;
             get_split_data(input_line, data, "_");
             init_strategy_U(g, input_line); // TODO
         }else{
-            cout<<"wrong input"<<endl;
+            assert(false && "wrong type in graph file");
+            break;
         }
     }
+    assert(g.U_LENGTH == x_nums && "Wrong parameter at 'g' 3rd parameter setting");
+
     fclose(fp_graph);
     if (line) free(line);
     init_strategy_one_dim_id(g.U);
