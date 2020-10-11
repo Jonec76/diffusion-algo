@@ -27,23 +27,6 @@ int main(int argc, char **argv){
     }
     set_config(argv[1], NAME);
     create_graph(g, GRAPH_PATH);
-    // vector<int> x;
-    // x.push_back(0);
-    // x.push_back(1);
-    // x.push_back(2);
-    // x.push_back(3);
-    // x.push_back(4);
-
-    // for(int i=0;i<x.size();i++){
-    //     if(x[i] > 2){
-    //         x.erase(x.begin() + i);
-    //         i--;
-    //     }
-    // }
-
-    // for(int i=0;i<x.size();i++){
-    //     cout<<x[i];
-    // }   
     algo_main(g);
     total_end = clock();
 
@@ -73,8 +56,8 @@ void algo_main(Graph& g){
     B.push_back(null_X);
 
     get_list_A(A, g);
-
-
+    get_list_B(B, A, g);
+    // the following is a test A_list for graph_4
     // A.push_back(null_X);
     // A.push_back(g.U[0][21]);
     // A.push_back(g.U[0][60]);
@@ -85,8 +68,7 @@ void algo_main(Graph& g){
     // A.push_back(g.U[0][203]);
     // A.push_back(g.U[0][12]);
     // A.push_back(g.U[0][294]);
-
-    get_list_B(B, A, g);
+    // cout<<"\n";
 }
 
 void get_list_A(vector<struct X> & A, Graph& g){
@@ -106,7 +88,7 @@ void get_list_A(vector<struct X> & A, Graph& g){
         PSPD_update_A(g, A, &diff_baseline_table, &X_in_set_A, &prev_best_A);
         cost_A = get_group_cost(A);
         end = clock();
-        printf("[ Iter: %lu ] %fs\n", iter++, (double)((end - start) / CLOCKS_PER_SEC));
+        printf("[ Iter A: %lu ] %fs\n", iter++, (double)((end - start) / CLOCKS_PER_SEC));
     }
     free(X_in_set_A);
     free(diff_baseline_table);
@@ -130,7 +112,11 @@ void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
     memset(X_in_set_B, false, g.U_LENGTH * sizeof(bool)); // for clearing previous record
     vector<vector<struct X>> set_C;
     bool A_finish_with_no_better_B = false;
+    clock_t start, end;
+    size_t iter = 0;
     while(cost_B < budget && !A_finish_with_no_better_B){
+        start = clock();
+
         vector<struct X> C_per_t ; // Not to insert null element
         if(i_day+1 < len_A){
             PSPD_get_C_i(C_per_t, g, B, A, &X_in_set_B, i_day);
@@ -154,6 +140,7 @@ void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
             }
             double F_a = diffusion(one_to_two_dim(A_i), g);
 
+
             if(max_B_F >= (1 - delta_f)*F_a){
                 migrate_strategy(B, C_per_t, max_X_idx_in_C, &X_in_set_B);
                 set_C.push_back(C_per_t);// C_i -> C_i+1
@@ -161,9 +148,10 @@ void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
             }else{
                 // RCR: 1. trim list C 
                 //      2. C_i -> C_i+1
-                cout<<"RCR"<<endl;
+
+                cout<<"In RCR 1\n";
                 j_day = RCR(A, B, set_C, j_day, i_day, g, &X_in_set_B);
-                i_day = j_day;
+                i_day = j_day+1;
             }
         }else{
             // F("B"_i)
@@ -207,14 +195,17 @@ void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
                     continue;
                 }
             }else{
-                cout<<"RCR\n";
+                cout<<"RCR 2\n";
                 j_day = RCR(A, B, set_C, j_day, i_day, g, &X_in_set_B);
-                i_day = j_day;
+                i_day = j_day +1;
                 // RCR
             }
         }
         cost_B = get_group_cost(B);
         // print_list(B);
+        end = clock();
+        printf("[ Iter B: %lu ] %fs\n", iter++, (double)((end - start) / CLOCKS_PER_SEC));
+
     }
 
     vector<vector<struct X>> S;
