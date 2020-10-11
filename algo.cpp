@@ -10,7 +10,7 @@ using namespace std;
 extern vector<struct el>level_table;
 extern char OUTPUT_FILE[30];
 extern size_t sample_size, period_T;
-extern double budget;
+extern double budget, delta_c, delta_f, delta_i;
 
 double get_X_cost(struct X x_t){
     if(x_t.id == -1)
@@ -244,7 +244,6 @@ void PSPD_get_C_i(vector<struct X>& C_per_t, Graph& g, vector<struct X>& B, vect
     
     // c("B"i U {X})
     vector<struct X> B_i = B;
-
     // c("A"i+1)
     vector<struct X> A_i = get_sublist(A, i_day+1);
     double cost_subA = min((1 + delta_c)* get_group_cost(A_i), budget);

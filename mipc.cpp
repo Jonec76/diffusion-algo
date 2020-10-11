@@ -40,7 +40,7 @@ double h_prob(vector<vector<Path>> infection_path, size_t period_T, vector<vecto
 //   prob * (1 - end_node->params.symptom - end_node->params.healing_fromI);
 
 
-void algo_mipc(Graph& g, int target_v, double theta, vector<vector<Path>>& infection_path){
+void algo_mipc(Graph& g, int target_v, vector<vector<Path>>& infection_path){
 
     // printf("Start Multi-hop infection Path Construction of node [%d].. \n\n", target_v);
 
@@ -69,7 +69,7 @@ void algo_mipc(Graph& g, int target_v, double theta, vector<vector<Path>>& infec
         // Use pointer for modifying the end_prob value at paper line:26
         double* end_prob = &(infection_path[i][infection_path[i].size()-1]).path_prob;
         Path p;
-        if(*end_prob * A_END < theta){
+        if(*end_prob * A_END < THETA){
             infection_path.erase(i + infection_path.begin());
             i--;
             continue;
@@ -182,7 +182,7 @@ void algo_mipc(Graph& g, int target_v, double theta, vector<vector<Path>>& infec
         size_t len = check_path.size()-1;
         if(len != period_T)
             break;
-        if(check_path[len].neighbor_stage != Stage::infected || check_path[len].path_prob * A_END < theta){
+        if(check_path[len].neighbor_stage != Stage::infected || check_path[len].path_prob * A_END < THETA){
             infection_path.erase(k + infection_path.begin());
         } 
     }
@@ -293,7 +293,7 @@ double IR(struct X x, vector<vector<struct X> > Strategy, Graph& g){
         vector<vector<Path>> infection_path;
         Stage prev_stage = g.N[v]->stage;
         g.N[v]->stage = Stage::infected; // To be removed;
-        algo_mipc(g, v, THETA, infection_path);
+        algo_mipc(g, v, infection_path);
         g.N[v]->stage = prev_stage; // To be removed;
         D_infection_paths.push_back(infection_path);
     }
@@ -354,7 +354,7 @@ double get_H_u(int u, Graph& g, int t, vector<vector<struct X>> B_list){
 
     vector<vector<Path>> infection_path;
     g.N[u]->stage = Stage::infected; // To be removed;
-    algo_mipc(g, u, THETA, infection_path);
+    algo_mipc(g, u, infection_path);
 
     double result = 0;
 
@@ -382,7 +382,7 @@ double get_ATD(int period_t, double k_u, double u_u, double sigma_u){
     return c1 + sum_value;
 }
 
-// Remove theta value
+// Remove THETA value
 
 double CR(struct X C_k_x, vector<vector<struct X>>B_list, Graph& g){
     double P_I_t = 1; 
@@ -393,8 +393,7 @@ double CR(struct X C_k_x, vector<vector<struct X>>B_list, Graph& g){
         vector<vector<Path>> infection_path;
         Stage prev_stage = g.N[v]->stage;
         g.N[v]->stage = Stage::infected; // To be removed;
-        THETA = 0.2;
-        algo_mipc(g, v, THETA, infection_path);
+        algo_mipc(g, v, infection_path);
         g.N[v]->stage = prev_stage; // To be removed;
         D_infection_paths.push_back(infection_path);
     }

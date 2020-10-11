@@ -11,9 +11,10 @@ using namespace std;
 
 const char* NAME = "main.txt";
 extern int sample_size;
-extern double budget;
+extern double budget, delta_f;
 extern char GRAPH_PATH[50];
 extern char OUTPUT_FILE[30];
+
 clock_t total_start, total_end;
 void get_list_A(vector<struct X> & A, Graph& g);
 void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g);
