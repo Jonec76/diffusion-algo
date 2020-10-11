@@ -29,6 +29,16 @@ void print_list(vector<struct X> list){
     }
 }
 
+void fprint_list(FILE** fp, vector<struct X> list){
+    fprintf (*fp, "\n");
+    
+    for(size_t i=0;i<list.size();i++){
+        if(list[i].id == -1)
+            continue;
+        fprintf (*fp, "         %d_%d\n",list[i].t, list[i].id);
+    }
+}
+
 double get_group_cost(vector<vector<struct X> >& group){
     double cost = 0;
     for(size_t t=0;t<group.size();t++){
@@ -126,8 +136,9 @@ void calc_greedy(vector<vector<struct X> >& S, Graph& g, bool* X_in_set_S[], dou
         printf("Failed to open file %s.", OUTPUT_FILE);
         exit(EXIT_FAILURE);
     }
-    fprintf (pFile, "\n%-15s :%f\n%-15s :%d_%d\n%-15s :","greedy ", min_greedy_value, "X ",  min_X.t, min_X.id, "S ");
+    fprintf (pFile, "\n%-15s :%f\n%-15s :%d_%d\n%-15s :%f\n%-16s","greedy ", diffusion(S, g), "X ",  min_X.t, min_X.id, "cost", get_group_cost(S), "S ");
     int tmp_idx = 0;
+    fprintf (pFile,":");
     for(size_t i=0;i<S.size();i++){
         for(size_t j=0;j<S[i].size();j++){
             fprintf (pFile, "%d_%d ", S[i][j].t, S[i][j].id);
@@ -219,21 +230,22 @@ void PSPD_update_A(Graph& g, vector<struct X>& A, double* diff_baseline_table[],
     if(max_one_dim_idx == -1)return;
     A.push_back(best_X);
 
-    FILE * pFile;
-    pFile = fopen (OUTPUT_FILE, "a");
-    if (pFile == NULL) {
-        printf("Failed to open file %s.", OUTPUT_FILE);
-        exit(EXIT_FAILURE);
-    }
-    fprintf (pFile, "\n%-15s :%f\n%-15s :%f\n%-15s :%f\n%-15s :%f\n%-15s :%d_%d_%d\n%-15s :","main: ",  max_value, "F(A U {X}, T)", ((*diff_baseline_table)[max_one_dim_idx] + *prev_best_A), "F(A, T)", *prev_best_A, "/ phi * C(D)", (level_table[best_X.lv].phi_cost * best_X.cost), "X_t_id_OneDim", best_X.t, best_X.id, max_one_dim_idx, "A Strategies");
-    int tmp_idx = 0;
+    // For output A list gradually.
 
-    for(size_t i=0;i<A.size();i++){
-        fprintf (pFile, "%d_%d ", A[i].t, A[i].id);
-        tmp_idx++;
-    }
-    fprintf(pFile, "\n");
-    fclose(pFile);
+    // FILE * pFile;
+    // pFile = fopen (OUTPUT_FILE, "a");
+    // if (pFile == NULL) {
+    //     printf("Failed to open file %s.", OUTPUT_FILE);
+    //     exit(EXIT_FAILURE);
+    // }
+    // fprintf (pFile, "\n%-15s :%f\n%-15s :%f\n%-15s :%f\n%-15s :%f\n%-15s :%d_%d_%d\n%-15s :","main: ",  max_value, "F(A U {X}, T)", ((*diff_baseline_table)[max_one_dim_idx] + *prev_best_A), "F(A, T)", *prev_best_A, "/ phi * C(D)", (level_table[best_X.lv].phi_cost * best_X.cost), "X_t_id_OneDim", best_X.t, best_X.id, max_one_dim_idx, "A Strategies");
+    // int tmp_idx = 0;
+    // for(size_t i=0;i<A.size();i++){
+    //     fprintf (pFile, "%d_%d ", A[i].t, A[i].id);
+    //     tmp_idx++;
+    // }
+    // fprintf(pFile, "\n");
+    // fclose(pFile);
 
     (*X_in_set_A)[max_one_dim_idx] = true;
     *prev_best_A = *prev_best_A + (*diff_baseline_table)[max_one_dim_idx];
@@ -371,17 +383,32 @@ void get_argmax_strategy(vector<vector<struct X>> &S, vector<struct X>&A, vector
     max_B_F = diffusion(one_to_two_dim(B), g);
     get_X_max_F(&max_X_F, X_list, g);
 
-    cout<<"A: "<<max_A_F<<endl;
-    print_list(A);
-    cout<<"cost: "<<get_group_cost(A)<<"\n============\n";
 
-    cout<<"B: "<<max_B_F<<endl;
-    print_list(B);
-    cout<<"cost: "<<get_group_cost(B)<<"\n============\n";
+    FILE * pFile;
+    pFile = fopen (OUTPUT_FILE, "a");
+    if (pFile == NULL) {
+        printf("Failed to open file %s.", OUTPUT_FILE);
+        exit(EXIT_FAILURE);
+    }
+ 
+    
+    fprintf(pFile, "\n-------- A --------\n");
+    fprintf (pFile, "A: ");
+    fprintf (pFile, "\n%-7s :%f\n%-7s :%f\n","F ", max_A_F, "Cost ",  get_group_cost(A));
+    fprint_list(&pFile, A);
 
-    cout<<"X: "<<max_X_F<<endl;
-    print_list(X_list);
-    cout<<"cost: "<<get_group_cost(X_list)<<"\n============\n";
+    fprintf(pFile, "\n-------- B --------\n");
+    fprintf (pFile, "\n%-7s :%f\n%-7s :%f\n","F ", max_B_F, "Cost ",  get_group_cost(B));
+    fprint_list(&pFile, B);
+
+    fprintf(pFile, "\n-------- X --------\n");
+    fprintf (pFile, "\n%-7s :%f\n%-7s :%f\n","F ", max_X_F, "Cost ",  get_group_cost(X_list));
+    fprint_list(&pFile, X_list);
+
+
+
+    fclose (pFile);
+
 
     if(max_A_F > max_B_F){
         if(max_A_F > max_X_F){

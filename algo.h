@@ -7,6 +7,7 @@
 
 void algo_main(Graph& g);
 void print_list(vector<struct X> list);
+void fprint_list(FILE** fp, vector<struct X> list);
 vector<vector<struct X> > algo_greedy(Graph& g);
 double get_X_cost(struct X x_t);
 void init_strategy(vector<vector<struct X> >& s);
