@@ -204,6 +204,7 @@ void set_config(char* argv, const char* file_name){
             THETA  = atof(params_input_line[6]);
             A_END  = atof(params_input_line[7]);
         }
+        line = NULL;
     }
     
 
@@ -234,7 +235,7 @@ void set_config(char* argv, const char* file_name){
         exit(EXIT_FAILURE);
     }
     fprintf (pFile, "=======================================================\n");
-    fprintf (pFile, "%-15s :%s\n%-15s :%s\n%-15s :%s\n%-15s :%s\n","Graph file: ", input_line[0], "Sample size ", input_line[1], "Budget ", input_line[2], "T", input_line[3]);
+    fprintf (pFile, "%-15s :%s\n%-15s :%s\n%-15s :%s\n%-15s :%s\n","Graph file: ", GRAPH_PATH, "Sample size ", input_line[1], "Budget ", input_line[2], "T", input_line[3]);
     fprintf (pFile, "=======================================================\n");
     fclose (pFile);
     fclose (fp_config);
