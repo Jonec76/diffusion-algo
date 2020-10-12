@@ -12,4 +12,4 @@ $(TARGETS): $(OBJS) main.cpp greedy.cpp mipc.cpp diffusion.cpp opt.cpp
 %.o: %.cpp *.h
 	$(CC) -o $@ -c $< $(CFLAGS)
 clean:
-	rm *.o main greedy mipc diffusion opt
+	rm *.o main greedy diffusion opt

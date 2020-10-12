@@ -111,6 +111,11 @@ void calc_greedy(vector<vector<struct X> >& S, Graph& g, bool* X_in_set_S[], dou
             struct X u_X = g.U[i][j];
 
             tmp[u_X.t].push_back(u_X);
+            if(get_group_cost(tmp) > budget){
+                one_dim_idx++;
+                continue;
+            }
+            
             double tmp_value = diffusion_greedy(tmp, g);
             if( tmp_value < min_greedy_value){
                 min_greedy_value = tmp_value;
