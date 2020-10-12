@@ -13,7 +13,9 @@ struct Path {
     int neighbor;
     Stage neighbor_stage;
 }; 
-void algo_mipc(Graph& g, int target_v, double theta, vector<vector<Path>>& infection_path);
+void algo_mipc(Graph& g, int target_v, vector<vector<Path>>& infection_path);
 double h_prob(vector<vector<Path>> infection_path, size_t h_t, vector<vector<X> > S, Graph& g, int TARGET_V);
+double CR(struct X C_k_x, vector<vector<struct X>>B_list, Graph& g);
+double IR(struct X x, vector<vector<struct X> > Strategy, Graph& g);
 
 #endif

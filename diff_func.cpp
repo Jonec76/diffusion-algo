@@ -12,6 +12,7 @@ using namespace std;
 string title[6] = {"susceptible", "infected", "ailing", "threatened", "dead", "recovered"};
 double alpha_f=0.944, alpha_g=0.5, param_c=2; 
 extern vector<struct el> level_table;
+extern double w_S, w_I, w_R;
 
 size_t get_positive_count(vector<vector<struct node*>*> positive_group){
     size_t ctr = 0;

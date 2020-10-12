@@ -1,9 +1,6 @@
 #ifndef DATA_H
 #define DATA_H
 
-#define w_S 1
-#define w_I 1
-#define w_R 1
 
 #define q_free 0
 #define q_low 1
@@ -66,10 +63,18 @@ struct node{
 // Group
 struct X{
     int id;
+    int one_dim_id;
     double cost;
-    vector<int>D; // Should be sorted during init level.
     int t;
     int lv;
     double eta; // -1 for not given eta value
+    vector<int>D; // Should be sorted during init level.
+};
+
+struct CRObj{
+    struct X c_X;
+    double diff;
+    int k_day;
+    double softmax_value;
 };
 #endif

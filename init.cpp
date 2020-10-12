@@ -25,14 +25,32 @@ const char* GRAPH_DIR = "./covid_data/";
 char OUTPUT_FILE[50];
 char MIPC_OUTPUT_FILE[50];
 
-char GRAPH_PATH [50];
 char MIPC_GRAPH_PATH [50];
-size_t sample_size = 1, period_T=3;
-double budget = 10;
 
-double A_END  = 0;
+
+// c
+const size_t c_size = 4;
+
+char GRAPH_PATH [50];
+size_t sample_size = 0;
+size_t period_T=0;
+double budget = 0;
+
+
+// p
+
+const size_t p_size = 8;
+
+double w_S = 0;
+double w_I = 0;
+double w_R = 0;
+
+double delta_c = 0;
+double delta_f = 0;
+double delta_i = 0;
+
 double THETA  = 0;
-int TARGET_V  = 0;
+double A_END  = 0;
 
 void init_node(Graph& g, vector<char*>& input_line){
     struct node* n = (struct node*)malloc(sizeof(struct node));
@@ -54,7 +72,7 @@ void init_edge(Graph& g, vector<char*>& input_line){
     g.addEdge(atoi(input_line[0]), atoi(input_line[1]), atof(input_line[2]));
 }
 
-void init_strategy(Graph& g, vector<char*>& input_line){
+void init_strategy_U(Graph& g, vector<char*>& input_line){
     struct X x;
     x.t = atoi(input_line[0]);
     assert((unsigned int)x.t < period_T);
@@ -79,6 +97,15 @@ void get_split_data(vector<char*>& input_line, char* data, char const data_delim
         token = strtok(NULL, data_delim);
     }
 }
+void init_strategy_one_dim_id(vector<vector<struct X>>& U){
+    int one_dim_idx =0;
+    for(size_t i=0;i<U.size();i++){
+        for(size_t j=0;j<U[i].size();j++){
+            U[i][j].one_dim_id = one_dim_idx;
+            one_dim_idx++;
+        }
+    }
+}; 
 
 
 /**
@@ -95,7 +122,7 @@ void create_graph(Graph &g, const char* GRAPH_FILE) {
 
     char *line = NULL;
     size_t len = 0;
-
+    size_t x_nums = 0;
     while ((getline(&line, &len, fp_graph)) != -1) {
         char* type = strtok(line, " ");
         char* data = strtok(NULL, " ");
@@ -113,14 +140,19 @@ void create_graph(Graph &g, const char* GRAPH_FILE) {
             get_split_data(input_line, data, ",");
             init_node(g, input_line);
         }else if(strcmp(type, "X") == 0){
+            x_nums++;
             get_split_data(input_line, data, "_");
-            init_strategy(g, input_line); // TODO
+            init_strategy_U(g, input_line); // TODO
         }else{
-            cout<<"wrong input"<<endl;
+            assert(false && "wrong type in graph file");
+            break;
         }
     }
+    assert(g.U_LENGTH == x_nums && "Wrong parameter at 'g' 3rd parameter setting");
+
     fclose(fp_graph);
     if (line) free(line);
+    init_strategy_one_dim_id(g.U);
 }
 
 
@@ -141,7 +173,7 @@ void set_config(char* argv, const char* file_name){
 
     char *line = NULL;
     size_t len = 0;
-    vector<char*>input_line;
+    vector<char*>input_line, params_input_line;
 
     while ((getline(&line, &len, fp_config)) != -1) {
         char* type = strtok(line, " ");
@@ -150,15 +182,31 @@ void set_config(char* argv, const char* file_name){
             continue;
         }else if(strcmp(type, "c") == 0){
             get_split_data(input_line, data, ",");
+            assert(input_line.size() == c_size && "Wrong c config");
+
+            strcat(GRAPH_PATH, GRAPH_DIR);
+            strcat(GRAPH_PATH, input_line[0]);
             sample_size = atoi(input_line[1]);
             budget = atof(input_line[2]);
             period_T = atoi(input_line[3]);
-            break;
+        }else if(strcmp(type, "p") == 0){
+            get_split_data(params_input_line, data, ",");
+            assert(params_input_line.size() == p_size && "Wrong p config");
+            
+            w_S = atof(params_input_line[0]);
+            w_I = atof(params_input_line[1]);
+            w_R = atof(params_input_line[2]);
+
+            delta_c = atof(params_input_line[3]);
+            delta_f = atof(params_input_line[4]);
+            delta_i = atof(params_input_line[5]);
+
+            THETA  = atof(params_input_line[6]);
+            A_END  = atof(params_input_line[7]);
         }
+        line = NULL;
     }
     
-    strcat(GRAPH_PATH, GRAPH_DIR);
-    strcat(GRAPH_PATH, input_line[0]);
 
     string tmp = RESULT_DIR;
     // For cleaning string
@@ -187,7 +235,7 @@ void set_config(char* argv, const char* file_name){
         exit(EXIT_FAILURE);
     }
     fprintf (pFile, "=======================================================\n");
-    fprintf (pFile, "%-15s :%s\n%-15s :%s\n%-15s :%s\n%-15s :%s\n","Graph file: ", input_line[0], "Sample size ", input_line[1], "Budget ", input_line[2], "T", input_line[3]);
+    fprintf (pFile, "%-15s :%s\n%-15s :%s\n%-15s :%s\n%-15s :%s\n","Graph file: ", GRAPH_PATH, "Sample size ", input_line[1], "Budget ", input_line[2], "T", input_line[3]);
     fprintf (pFile, "=======================================================\n");
     fclose (pFile);
     fclose (fp_config);
@@ -200,26 +248,11 @@ void set_mipc_config(char* argv, const char* file_name){
         exit(EXIT_FAILURE);
     }
     
-    char *line = NULL;
-    size_t len = 0;
     vector<char*>input_line;
     
-    while ((getline(&line, &len, fp_config)) != -1) {
-        char* type = strtok(line, " ");
-        char* data = strtok(NULL, " ");
-        if(strcmp(type, "#") == 0){
-            continue;
-        }else if(strcmp(type, "m") == 0){
-            get_split_data(input_line, data, ",");
-            strncpy(GRAPH_PATH, input_line[0], 50);
-            A_END  = atof(input_line[1]);
-            THETA  = atof(input_line[2]);
-            period_T = atoi(input_line[3]);
-            TARGET_V  = atoi(input_line[4]);
-            break;
-        }
-    }
-    
+    assert(true && "It needs to be rescheduled how to read the config file without seperate this function");
+
+
     strcat(MIPC_GRAPH_PATH, GRAPH_DIR);
     strcat(MIPC_GRAPH_PATH, input_line[0]);
 

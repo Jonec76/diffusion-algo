@@ -83,10 +83,10 @@ void opt(Graph &g, const char* GRAPH_FILE) {
             init_node(g, input_line);
         }else if(strcmp(type, "X") == 0){
             get_split_data(input_line, data, "_");
-            init_strategy(g, input_line); // TODO
+            init_strategy_U(g, input_line); // TODO
         }else if(strcmp(type, "S") == 0){
             get_split_data(input_line, data, "_");
-            init_strategy(g, input_line);
+            init_strategy_U(g, input_line);
         }else if(strcmp(type, "*") == 0){
             double compare = 0;
             compare = diffusion(g.U, g, level_table_opt);

@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
+#include <assert.h>
 #include "init.h"
 #include "mipc.h"
 
-const char* NAME = "mipc.txt";
+const char* name = "mipc.txt";
 extern char MIPC_GRAPH_PATH[50];
 extern char MIPC_OUTPUT_FILE[30];
 
@@ -18,37 +20,29 @@ vector<vector<X> > S;
 
 char get_s(Stage s);
 void output_path(vector<vector<Path>>&  infection_path);
-void do_extend(vector<Path>& extend_path, vector<Path>& original_path, Path p);
+void do_extend(vector<Path>& extended_path, vector<Path>& original_path, Path p);
 double h_prob(vector<vector<Path>> infection_path, size_t period_T, vector<vector<X> > S, Graph& g);
 
-int main(int argc, char** argv){
-    Graph g;
-    set_mipc_config(argv[1], NAME);
-    create_graph(g, MIPC_GRAPH_PATH);
-    vector<vector<Path>> infection_path;
-    for(size_t j=0;j<g.V;j++){ // Init stage
-        g.N[j]->stage = Stage::susceptible;
-        double r = (rand() % 100)/100.0; //here: 0;
-        double s_i = g.N[j]->params.relative * g.N[j]->params.contagion;
-        if(r < s_i){
-            g.N[j]->stage = Stage::infected;
-        }
-    }
-    g.N[TARGET_V]->stage = Stage::infected; // To be removed;
-    algo_mipc(g, TARGET_V, THETA, infection_path);
+// int main(int argc, char** argv){
+//     Graph g;
+//     set_mipc_config(argv[1], name);
+//     create_graph(g, MIPC_GRAPH_PATH);
+//     vector<vector<Path>> infection_path;
+//     g.N[TARGET_V]->stage = Stage::infected; // To be removed;
+//     algo_mipc(g, TARGET_V, THETA, infection_path);
 
-    size_t t=2;
-    cout<<h_prob(infection_path, t, g.U, g, TARGET_V);
-}
+//     size_t t=period_T;
+//     cout<<h_prob(infection_path, t, g.U, g, TARGET_V);
+// }
 
 // Because parameters get a random value between 0~1
 // so the probability of edge would become negative after calculating the following formula
 //   prob * (1 - end_node->params.symptom - end_node->params.healing_fromI);
 
 
-void algo_mipc(Graph& g, int target_v, double theta, vector<vector<Path>>& infection_path){
+void algo_mipc(Graph& g, int target_v, vector<vector<Path>>& infection_path){
 
-    printf("Start Multi-hop infection Path Construction of node [%d].. \n\n", target_v);
+    // printf("Start Multi-hop infection Path Construction of node [%d].. \n\n", target_v);
 
     vector<Path> single_path;
     vector<bool> visited(g.V, false);
@@ -71,20 +65,25 @@ void algo_mipc(Graph& g, int target_v, double theta, vector<vector<Path>>& infec
         int end_id = original_path[original_path.size()-1].neighbor;
         struct node* end_node = g.N[end_id];
         Stage end_stage = original_path[original_path.size()-1].neighbor_stage;
-        double end_prob = original_path[original_path.size()-1].path_prob;
+
+        // Use pointer for modifying the end_prob value at paper line:26
+        double* end_prob = &(infection_path[i][infection_path[i].size()-1]).path_prob;
         Path p;
-        
-        if(end_prob * A_END < theta)
+        if(*end_prob * A_END < THETA){
+            infection_path.erase(i + infection_path.begin());
+            i--;
             continue;
+        }
         switch (end_stage){
             case Stage::infected:
                 if(end_id != target_v){
-                    vector<Path> extend_path = original_path;
+                    vector<Path> extended_path = original_path;
                     p.neighbor = end_id;
                     p.neighbor_stage = Stage::infected;
-                    p.path_prob = end_prob * (1 - end_node->params.symptom - end_node->params.healing_fromI);
-                    do_extend(extend_path, original_path, p);
-                    infection_path.push_back(extend_path);
+                    p.path_prob = *end_prob * (1 - end_node->params.symptom - end_node->params.healing_fromI);
+                    do_extend(extended_path, original_path, p);
+                    // Not necessary to record the visited table
+                    infection_path.push_back(extended_path);
                 }
 
                 for(size_t e=0;e < g.adj[end_id].size();e++){
@@ -92,29 +91,29 @@ void algo_mipc(Graph& g, int target_v, double theta, vector<vector<Path>>& infec
                     double edge_prob = g.get_edge_prob(g.N[target_v], u);
                     if(original_path[original_path.size()-1].visited[u->id])
                         continue;
-                    for(int i=0;i<3;i++){
-                        vector<Path> extend_path = original_path;
+                    for(int j=0;j<3;j++){
+                        vector<Path> extended_path = original_path;
                         Path p ;
                         p.neighbor = u->id;
-                        switch (i){
+                        switch (j){
                             case 0:
-                                p.path_prob = end_prob * edge_prob * end_node->params.relative * end_node->params.contagion;
+                                p.path_prob = *end_prob * edge_prob * end_node->params.relative * end_node->params.contagion;
                                 p.neighbor_stage = Stage::infected;
                                 break;
                             case 1:
-                                p.path_prob = end_prob * edge_prob * end_node->params.contagion;
+                                p.path_prob = *end_prob * edge_prob * end_node->params.contagion;
                                 p.neighbor_stage = Stage::ailing;
                                 break;
                             case 2:
-                                p.path_prob = end_prob * edge_prob * end_node->params.contagion;
+                                p.path_prob = *end_prob * edge_prob * end_node->params.contagion;
                                 p.neighbor_stage = Stage::threatened;
                                 break;
                             default:
                                 break;
                         }
-                        do_extend(extend_path, original_path, p);
-                        extend_path[extend_path.size()-1].visited[u->id] = true;
-                        infection_path.push_back(extend_path);
+                        do_extend(extended_path, original_path, p);
+                        extended_path[extended_path.size()-1].visited[u->id] = true;
+                        infection_path.push_back(extended_path);
 
                         // For debuggin the visited boolean table.
                         // cout<<"end: "<<end_id<<": ";
@@ -125,55 +124,55 @@ void algo_mipc(Graph& g, int target_v, double theta, vector<vector<Path>>& infec
                 }
                 break;
             case Stage::ailing:
-                for(int i=0;i<2;i++){
-                    vector<Path> extend_path = original_path;
+                for(int j=0;j<2;j++){
+                    vector<Path> extended_path = original_path;
                     Path p;
                     p.neighbor = end_id;
-                    switch (i){
+                    switch (j){
                         case 0:
-                            p.path_prob = end_prob * end_node->params.symptom;
+                            p.path_prob = *end_prob * end_node->params.symptom;
                             p.neighbor_stage = Stage::infected;
                             break;
                         case 1:
-                            p.path_prob = end_prob * (1 - end_node->params.critical - end_node->params.healing_fromA);
+                            p.path_prob = *end_prob * (1 - end_node->params.critical - end_node->params.healing_fromA);
                             p.neighbor_stage = Stage::ailing;
                             break;
                         default:
                             break;
                     }
-                    do_extend(extend_path, original_path, p);
-                    infection_path.push_back(extend_path);
+                    do_extend(extended_path, original_path, p);
+                    infection_path.push_back(extended_path);
                 }
                 break;
             case Stage::threatened:
-                for(int i=0;i<2;i++){
-                    vector<Path> extend_path = original_path;
+                for(int j=0;j<2;j++){
+                    vector<Path> extended_path = original_path;
                     Path p;
                     p.neighbor = end_id;
-                    switch (i){
+                    switch (j){
                         case 0:
-                            p.path_prob = end_prob * end_node->params.critical;
+                            p.path_prob = *end_prob * end_node->params.critical;
                             p.neighbor_stage = Stage::ailing;
                             break;
                         case 1:
-                            p.path_prob = end_prob * (1 - end_node->params.death - end_node->params.healing_fromT);
+                            p.path_prob = *end_prob * (1 - end_node->params.death - end_node->params.healing_fromT);
                             p.neighbor_stage = Stage::threatened;
                             break;
                         default:
                             break;
                     }
-                    do_extend(extend_path, original_path, p);
-                    infection_path.push_back(extend_path);
+                    do_extend(extended_path, original_path, p);
+                    infection_path.push_back(extended_path);
                 }
                 break;
             default:
                 continue;
         }
-        if(end_stage != Stage::infected){
+        if(end_stage != Stage::infected ){
             infection_path.erase(i + infection_path.begin());
             i--;
         }else{
-            original_path[original_path.size()-1].path_prob *= A_END;
+            *end_prob *= A_END;
         }
     }
 
@@ -181,39 +180,43 @@ void algo_mipc(Graph& g, int target_v, double theta, vector<vector<Path>>& infec
     for(int k=infection_path.size()-1;k>=0;k--){ 
         vector<Path> check_path = infection_path[k];
         size_t len = check_path.size()-1;
-        if(len != period_T-1)
+        if(len != period_T)
             break;
-        if(check_path[len].neighbor_stage != Stage::infected){
+        if(check_path[len].neighbor_stage != Stage::infected || check_path[len].path_prob * A_END < THETA){
             infection_path.erase(k + infection_path.begin());
-        }  
+        } 
     }
-    output_path(infection_path);
+    // output_path(infection_path);
 }
 
-void do_extend(vector<Path>& extend_path, vector<Path>& original_path, Path p){
-    extend_path.push_back(p);
-    extend_path[extend_path.size()-1].visited = original_path[original_path.size()-1].visited;
+void do_extend(vector<Path>& extended_path, vector<Path>& original_path, Path p){
+    extended_path.push_back(p);
+    extended_path[extended_path.size()-1].visited = original_path[original_path.size()-1].visited;
 }
 
 void output_path(vector<vector<Path>>&  infection_path){
     size_t total_path_num = infection_path.size();
     string line = "";
-    FILE *fp = fopen(MIPC_OUTPUT_FILE, "a");
-    if (fp == NULL) {
-        printf("Failed to open file %s.", MIPC_OUTPUT_FILE);
-        exit(EXIT_FAILURE);
-    }
+    // FILE *fp = fopen(MIPC_OUTPUT_FILE, "a");
+    // if (fp == NULL) {
+    //     printf("Failed to open file %s.", MIPC_OUTPUT_FILE);
+    //     exit(EXIT_FAILURE);
+    // }
     for(size_t i=0;i<total_path_num;i++){
-        fprintf(fp, "%-5ld :", i);
+        // fprintf(fp, "%-5ld :", i);
+        printf( "%-5ld :", i);
         if(infection_path[i].size() == 0)
             continue;
-        fprintf(fp, " %d(%c)", infection_path[i][0].neighbor, get_s(infection_path[i][0].neighbor_stage));
+        // fprintf(fp, " %d(%c)", infection_path[i][0].neighbor, get_s(infection_path[i][0].neighbor_stage));
+        printf( " %d(%c)", infection_path[i][0].neighbor, get_s(infection_path[i][0].neighbor_stage));
         for(size_t j=1;j<infection_path[i].size();j++){
-            fprintf(fp, " <---%.3f--- %d(%c)", infection_path[i][j].path_prob, infection_path[i][j].neighbor, get_s(infection_path[i][j].neighbor_stage));
+            // fprintf(fp, " <---%.3f--- %d(%c)", infection_path[i][j].path_prob, infection_path[i][j].neighbor, get_s(infection_path[i][j].neighbor_stage));
+            printf( " <---%.3f--- %d(%c)", infection_path[i][j].path_prob, infection_path[i][j].neighbor, get_s(infection_path[i][j].neighbor_stage));
         }
-        fprintf(fp, "\n\n");
+        // fprintf(fp, "\n\n");
+        printf( "\n\n");
     }
-    fclose(fp);
+    // fclose(fp);
 }
 
 char get_s(Stage s){
@@ -243,11 +246,11 @@ char get_s(Stage s){
     }
 }
 
-double h_prob(vector<vector<Path>> infection_path, size_t h_t, vector<vector<X> > S, Graph& g, int TARGET_V){
+double h_prob(vector<vector<Path>> infection_path, size_t h_t, vector<vector<X> > S, Graph& g, int target_v){
     double AIP=1;
 
     if(h_t == 0)
-        return g.N[TARGET_V]->a_v;
+        return g.N[target_v]->a_v;
 
     vector<vector<Path>> infection_path_t;
     for(size_t i=0;i<infection_path.size();i++){
@@ -281,4 +284,149 @@ double h_prob(vector<vector<Path>> infection_path, size_t h_t, vector<vector<X> 
     }
 
     return AIP;
+}
+
+double IR(struct X x, vector<vector<struct X> > Strategy, Graph& g){
+    vector<vector<vector<Path>>> D_infection_paths;
+    // Find all infection paths at first, it will be used for calculating the following prob. 
+    for(size_t v = 0;v<x.D.size();v++){
+        vector<vector<Path>> infection_path;
+        Stage prev_stage = g.N[v]->stage;
+        g.N[v]->stage = Stage::infected; // To be removed;
+        algo_mipc(g, v, infection_path);
+        g.N[v]->stage = prev_stage; // To be removed;
+        D_infection_paths.push_back(infection_path);
+    }
+
+    double c_D = 1 / (double)x.D.size();
+    int period_t = x.t + 1;
+    double P_I_t=0, P_A_t=0, P_T_t=0;
+    // P_I_t
+    for(size_t v = 0;v<x.D.size();v++){
+        vector<vector<Path>> infection_path_v = D_infection_paths[v];
+        struct node* target_node;
+        target_node = g.N[v]; 
+        for(int t = 0;t<=period_t;t++){
+            double c2 = pow((1 - target_node->params.healing_fromI - target_node->params.symptom), period_t - t);
+            P_I_t += (h_prob(infection_path_v, t, Strategy, g, x.D[v]) * c2);
+        }
+    }
+    // P_A_t
+    for(size_t v = 0;v<x.D.size();v++){
+        vector<vector<Path>> infection_path_v = D_infection_paths[v];
+        struct node* target_node;
+        target_node = g.N[v];
+        for(int t1 = 0;t1<=period_t-1;t1++){
+            for(int t2 = 0;t2<=period_t - t1 - 1;t2++){
+                double c2 = pow((1 - target_node->params.healing_fromI - target_node->params.symptom), t2);
+                double c3 = target_node->params.symptom;
+                double c4 = pow((1 - target_node->params.healing_fromA - target_node->params.critical), (period_t - t1 - t2 -1));
+                P_A_t += (h_prob(infection_path_v, t1, Strategy, g, x.D[v]) * c2 * c3 * c4);
+            }
+        }
+    }
+
+    // // P_T_t
+    for(size_t v = 0;v<x.D.size();v++){
+        vector<vector<Path>> infection_path_v = D_infection_paths[v];
+        struct node* target_node;
+        target_node = g.N[v];
+        for(int t1 = 0;t1<=period_t-2;t1++){
+            for(int t2 = 0;t2<=period_t - t1 - 2;t2++){
+                for(int t3 = 0;t3 <= period_t - t1 - t2 - 2; t3++){
+                    double c2 = pow((1 - target_node->params.healing_fromI - target_node->params.symptom), t2);
+                    double c3 = target_node->params.symptom;
+                    double c4 = pow((1 - target_node->params.healing_fromA - target_node->params.critical), t3);
+                    double c5 = target_node->params.critical;
+                    double c6 = pow((1 - target_node->params.healing_fromT - target_node->params.death), (period_t - t1 - t2 - t3 - 2));
+                    P_T_t += (h_prob(infection_path_v, t1, Strategy, g, x.D[v]) * c2 * c3 * c4 * c5 * c6);
+                }
+            }
+        }
+    }
+    return c_D * ( P_I_t + P_A_t  + P_T_t);
+    // return 0;
+}  
+
+double get_H_u(int u, Graph& g, int t, vector<vector<struct X>> B_list){
+    if(t == 0)
+        return 1;
+
+    vector<vector<Path>> infection_path;
+    g.N[u]->stage = Stage::infected; // To be removed;
+    algo_mipc(g, u, infection_path);
+
+    double result = 0;
+
+    for(int t1=1;t1<=t;t1++){
+        result += (1 - h_prob(infection_path, t1, B_list, g, u)) *  get_H_u(u, g, t-1, B_list);
+    }
+    return result;
+}
+
+
+double get_P_S_t(int u, Graph& g, int t, vector<vector<struct X>> B_list){
+    double c = 1 - g.N[u]->a_v;
+    double H_u = get_H_u(u, g, t, B_list);
+    return c * H_u;
+}
+
+double get_ATD(int period_t, double k_u, double u_u, double sigma_u){
+    int delta_t = period_T - period_t - 2;
+    double c1 = pow((1 - k_u - u_u), delta_t);
+    double sum_value = 0;
+
+    for(int t1=0;t1 < delta_t - 1;t1++){
+        sum_value += pow((1 - k_u - u_u), t1) * u_u * pow((1-sigma_u), delta_t - t1 - 1);
+    }
+    return c1 + sum_value;
+}
+
+// Remove THETA value
+
+double CR(struct X C_k_x, vector<vector<struct X>>B_list, Graph& g){
+    double P_I_t = 1; 
+    vector<vector<vector<Path>>> D_infection_paths;
+
+    // Find all infection paths at first, it will be used for calculating the following prob. 
+    for(size_t v = 0;v<C_k_x.D.size();v++){
+        vector<vector<Path>> infection_path;
+        Stage prev_stage = g.N[v]->stage;
+        g.N[v]->stage = Stage::infected; // To be removed;
+        algo_mipc(g, v, infection_path);
+        g.N[v]->stage = prev_stage; // To be removed;
+        D_infection_paths.push_back(infection_path);
+    }
+
+    int period_t = C_k_x.t+1;
+    // P_I_t
+    for(size_t v = 0;v<C_k_x.D.size();v++){
+        vector<vector<Path>> infection_path_v = D_infection_paths[v];
+        struct node* target_node;
+        target_node = g.N[v]; 
+        for(int t = 0;t<=period_t;t++){
+            double c2 = pow((1 - target_node->params.healing_fromI - target_node->params.symptom), period_t - t);
+            P_I_t += (h_prob(infection_path_v, t, B_list, g, C_k_x.D[v]) * c2);
+        } 
+    }
+
+    double sum_value = 0;
+    for(size_t v = 0;v<C_k_x.D.size();v++){
+        for(size_t j=0;j<g.adj[v].size();j++){
+            int u = g.adj[v][j].neighbor; // v -- u
+            double P_S_t, p_u_v, phi, c1, c2, c3, ATD;
+            
+            P_S_t = get_P_S_t(u, g, period_t, B_list);
+            p_u_v = g.get_edge_prob(g.N[u], g.N[v]);
+            phi = level_table[C_k_x.lv].phi_cost;
+            c1 = g.N[u]->params.relative;
+            c2 = g.N[u]->params.contagion;
+            c3 = g.N[u]->params.symptom;
+            ATD = get_ATD(period_t, g.N[u]->params.healing_fromA, g.N[u]->params.critical, g.N[u]->params.healing_fromT);
+            
+            sum_value += (P_S_t * p_u_v * phi * c1 * c2 * c3 * ATD);
+        }
+    }
+    assert(P_I_t != 0);
+    return sum_value / P_I_t;
 }
