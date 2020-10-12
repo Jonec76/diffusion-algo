@@ -8,6 +8,7 @@
 #include "init.h"
 #include "graph.h"
 #include "diff_func.h"
+#include "algo.h"
 using namespace std;
 
 const char* NAME = "opt.txt";
@@ -80,7 +81,7 @@ void opt(Graph &g, const char* GRAPH_FILE) {
             int E=atoi(input_line[1]); //input_line[2]: U length
 
             // U_LENGTH is not used in opt.
-            int U_LENGTH = atoi(input_line[2]);
+            int U_LENGTH = 0;
             g.init_graph(V, E, U_LENGTH);
         }
         else if(strcmp(type, "e") == 0){
@@ -116,6 +117,12 @@ void opt(Graph &g, const char* GRAPH_FILE) {
             assert(false && "wrong input");
             cout<<"wrong input"<<endl;
         }
+    }
+    double empty_F = diffusion(g.U, g);
+    if(max < empty_F){
+        max = empty_F;
+        max_index = -1;
+        max_content = g.U;
     }
 
     FILE * pFile;
