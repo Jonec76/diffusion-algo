@@ -129,19 +129,23 @@ void create_graph(Graph &g, const char* GRAPH_FILE) {
         vector<char*>input_line;
         if(strcmp(type, "g") == 0){
             get_split_data(input_line, data, ",");
+            assert(input_line.size() == g_size && "Wrong numbers of g type");
             int V=atoi(input_line[0]);
             int E=atoi(input_line[1]); //input_line[2]: U length
             int U_LENGTH = atoi(input_line[2]);
             g.init_graph(V, E, U_LENGTH);
         }else if(strcmp(type, "e") == 0){
             get_split_data(input_line, data, ",");
+            assert(input_line.size() == e_size && "Wrong numbers of e type");
             init_edge(g, input_line);
         }else if(strcmp(type, "n") == 0){
             get_split_data(input_line, data, ",");
+            assert(input_line.size() == n_size && "Wrong numbers of n type");
             init_node(g, input_line);
         }else if(strcmp(type, "X") == 0){
             x_nums++;
             get_split_data(input_line, data, "_");
+            assert(input_line.size() == x_size && "Wrong numbers of x type");
             init_strategy_U(g, input_line); // TODO
         }else{
             assert(false && "wrong type in graph file");

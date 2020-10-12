@@ -17,6 +17,11 @@ extern size_t period_T;
 extern double budget;
 extern char GRAPH_PATH[50];
 extern char OUTPUT_FILE[30];
+extern const size_t n_size;
+extern const size_t g_size;
+extern const size_t e_size;
+extern const size_t x_size;
+
 clock_t total_start, total_end;
 void opt(Graph &g, const char* GRAPH_FILE);
 struct el opt_el0, opt_el1 = {0.5, 0.5}, opt_el2 = {1, 1};
@@ -70,22 +75,25 @@ void opt(Graph &g, const char* GRAPH_FILE) {
         vector<char*>input_line;
         if(strcmp(type, "g") == 0){
             get_split_data(input_line, data, ",");
+            assert(input_line.size() == g_size && "Wrong numbers of g type");
             int V=atoi(input_line[0]);
             int E=atoi(input_line[1]); //input_line[2]: U length
+
+            // U_LENGTH is not used in opt.
             int U_LENGTH = atoi(input_line[2]);
             g.init_graph(V, E, U_LENGTH);
         }
         else if(strcmp(type, "e") == 0){
             get_split_data(input_line, data, ",");
+            assert(input_line.size() == e_size && "Wrong numbers of e type");
             init_edge(g, input_line);
         }else if(strcmp(type, "n") == 0){
             get_split_data(input_line, data, ",");
+            assert(input_line.size() == n_size && "Wrong numbers of n type");
             init_node(g, input_line);
-        }else if(strcmp(type, "X") == 0){
-            get_split_data(input_line, data, "_");
-            init_strategy_U(g, input_line); // TODO
         }else if(strcmp(type, "S") == 0){
             get_split_data(input_line, data, "_");
+            assert(input_line.size() == x_size && "Wrong numbers of s type");
             init_strategy_U(g, input_line);
         }else if(strcmp(type, "*") == 0){
             double compare = 0;
@@ -105,6 +113,7 @@ void opt(Graph &g, const char* GRAPH_FILE) {
             cout << "Strategy index :" <<index <<endl;
         }
         else{
+            assert(false && "wrong input");
             cout<<"wrong input"<<endl;
         }
     }
