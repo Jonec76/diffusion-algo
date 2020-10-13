@@ -56,7 +56,7 @@ void migrate_x(vector<vector<struct X> >& tmp_S, int m_bit, vector<struct X> X_l
 
 
 // what if Y or Z size equals to 0?
-bool rescheduling(vector<struct X> Y, vector<struct X> Z, int ra, Graph& g, vector<vector<struct X> >&S){
+bool rescheduling(vector<struct X> Y, vector<struct X> Z, int ra, Graph& g, vector<vector<struct X> >&S, double max_F){
     bool flag = false;
     size_t y_size = Y.size();
     size_t z_size = Z.size();
@@ -99,8 +99,6 @@ bool rescheduling(vector<struct X> Y, vector<struct X> Z, int ra, Graph& g, vect
         }
     }
 
-    double F = diffusion(S, g);
-
     for(size_t i=0;i<sets.size();i++){
         vector<vector<struct X> >tmp_S = S;
         remove_yz(tmp_S, Y, Z);
@@ -108,9 +106,8 @@ bool rescheduling(vector<struct X> Y, vector<struct X> Z, int ra, Graph& g, vect
         migrate_x(tmp_S, sets[i].second, Z, 1);
 
         double migrate_F = diffusion(tmp_S, g);
-        cout<<"Scheduled list F: "<<migrate_F<<"Original F: "<<F<<endl;
-        if(migrate_F > F){
-
+        printf ("\n%-15s :%f\n%-15s :%f\n\n","Scheduled F ", migrate_F, "Original F ",  max_F);
+        if(migrate_F > max_F){
             FILE * pFile;
             pFile = fopen (OUTPUT_FILE, "a");
             if (pFile == NULL) {
@@ -203,7 +200,7 @@ void backward_rescheduling(vector<struct X>& Z, vector<vector<struct X> >&S, siz
     }
 }
 
-void SAS(vector<vector<struct X> >&S, int ra, Graph& g){
+void SAS(vector<vector<struct X> >&S, int ra, Graph& g, double max_F){
     
     if(period_T == 0)
         return;
@@ -219,7 +216,7 @@ void SAS(vector<vector<struct X> >&S, int ra, Graph& g){
             vector<struct X> Y, Z;
             forward_rescheduling(Y, S, t, g);
             backward_rescheduling(Z, S, t-1, g);
-            flag |= rescheduling(Y, Z, ra, g, S);
+            flag |= rescheduling(Y, Z, ra, g, S, max_F);
             if(flag)
                 break;
         }
@@ -230,7 +227,7 @@ void SAS(vector<vector<struct X> >&S, int ra, Graph& g){
             vector<struct X> Y, Z;
             forward_rescheduling(Y, S, t, g);
             backward_rescheduling(Z, S, t-1, g);
-            flag |= rescheduling(Y, Z, ra, g, S);
+            flag |= rescheduling(Y, Z, ra, g, S, max_F);
             if(flag)
                 break;
         }

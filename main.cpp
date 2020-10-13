@@ -153,7 +153,7 @@ void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
                 // RCR: 1. trim list C 
                 //      2. C_i -> C_i+1
 
-                cout<<"In RCR 1\n";
+                cout<<"[ In RCR 1 ]\n";
                 j_day = RCR(A, B, set_C, j_day, i_day, g, &X_in_set_B);
                 i_day = j_day+1;
             }
@@ -199,7 +199,7 @@ void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
                     continue;
                 }
             }else{
-                cout<<"RCR 2\n";
+                cout<<"[ In RCR 2 ]\n";
                 j_day = RCR(A, B, set_C, j_day, i_day, g, &X_in_set_B);
                 i_day = j_day +1;
                 // RCR
@@ -213,7 +213,8 @@ void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
     }
 
     vector<vector<struct X>> S;
-    get_argmax_strategy(S, A, B, g);
-    SAS(S, RA, g);
+    double max_F;
+    get_argmax_strategy(&max_F, S, A, B, g);
+    SAS(S, RA, g, max_F);
     free(X_in_set_B);
 }

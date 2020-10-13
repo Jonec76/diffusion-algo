@@ -376,12 +376,12 @@ void get_X_max_F(double* max_X_F, vector<struct X>& max_X_list, Graph& g){
     max_X_list.push_back(max_X);
 } 
 
-void get_argmax_strategy(vector<vector<struct X>> &S, vector<struct X>&A, vector<struct X>&B, Graph& g){
+void get_argmax_strategy(double* max_F, vector<vector<struct X>> &S, vector<struct X>&A, vector<struct X>&B, Graph& g){
     double max_A_F=0;
     double max_B_F=0;
     double max_X_F=0;
     
-    double max_F=0;
+    
     vector<struct X> max_list;
     vector<struct X> X_list;
     max_A_F = diffusion(one_to_two_dim(A), g);
@@ -417,28 +417,28 @@ void get_argmax_strategy(vector<vector<struct X>> &S, vector<struct X>&A, vector
 
     if(max_A_F > max_B_F){
         if(max_A_F > max_X_F){
-            max_F = max_A_F;
+            *max_F = max_A_F;
             max_list = A;
             S = one_to_two_dim(A);
         }else{
-            max_F = max_X_F;
+            *max_F = max_X_F;
             max_list = X_list;
             S = one_to_two_dim(X_list);
         }
     }else{
         if(max_B_F > max_X_F){
-            max_F = max_B_F;
+            *max_F = max_B_F;
             max_list = B;
             S = one_to_two_dim(B);
         }else{
-            max_F = max_X_F;
+            *max_F = max_X_F;
             max_list = X_list;
             S = one_to_two_dim(X_list);
         }
     }
 
     fprintf(pFile, "\n-------- S --------\n");
-    fprintf (pFile, "\n%-7s :%f\n%-7s :%f\n","F ", max_F, "Cost ",  get_group_cost(S));
+    fprintf (pFile, "\n%-7s :%f\n%-7s :%f\n","F ", *max_F, "Cost ",  get_group_cost(S));
     fprint_list(&pFile, max_list);
     fclose (pFile);
 
