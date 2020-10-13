@@ -430,3 +430,56 @@ double CR(struct X C_k_x, vector<vector<struct X>>B_list, Graph& g){
     assert(P_I_t != 0);
     return sum_value / P_I_t;
 }
+
+double SS(struct X x, vector<vector<struct X> > Strategy, Graph& g, int t){
+    vector<vector<vector<Path>>> D_infection_paths;
+    // Find all infection paths at first, it will be used for calculating the following prob. 
+    for(size_t v = 0;v<x.D.size();v++){
+        vector<vector<Path>> infection_path;
+        Stage prev_stage = g.N[v]->stage;
+        g.N[v]->stage = Stage::infected; 
+        algo_mipc(g, v, infection_path);
+        g.N[v]->stage = prev_stage; 
+        D_infection_paths.push_back(infection_path);
+    }
+
+    double c_D = 1 / (double)x.D.size();
+    int period_t = t + 1;
+    double P_A_t=0, P_T_t=0;
+
+    // P_A_t
+    for(size_t v = 0;v<x.D.size();v++){
+        vector<vector<Path>> infection_path_v = D_infection_paths[v];
+        struct node* target_node;
+        target_node = g.N[v];
+        for(int t1 = 0;t1<=period_t-1;t1++){
+            for(int t2 = 0;t2<=period_t - t1 - 1;t2++){
+                double c2 = pow((1 - target_node->params.healing_fromI - target_node->params.symptom), t2);
+                double c3 = target_node->params.symptom;
+                double c4 = pow((1 - target_node->params.healing_fromA - target_node->params.critical), (period_t - t1 - t2 -1));
+                P_A_t += (h_prob(infection_path_v, t1, Strategy, g, x.D[v]) * c2 * c3 * c4);
+            }
+        }
+    }
+
+    // // P_T_t
+    for(size_t v = 0;v<x.D.size();v++){
+        vector<vector<Path>> infection_path_v = D_infection_paths[v];
+        struct node* target_node;
+        target_node = g.N[v];
+        for(int t1 = 0;t1<=period_t-2;t1++){
+            for(int t2 = 0;t2<=period_t - t1 - 2;t2++){
+                for(int t3 = 0;t3 <= period_t - t1 - t2 - 2; t3++){
+                    double c2 = pow((1 - target_node->params.healing_fromI - target_node->params.symptom), t2);
+                    double c3 = target_node->params.symptom;
+                    double c4 = pow((1 - target_node->params.healing_fromA - target_node->params.critical), t3);
+                    double c5 = target_node->params.critical;
+                    double c6 = pow((1 - target_node->params.healing_fromT - target_node->params.death), (period_t - t1 - t2 - t3 - 2));
+                    P_T_t += (h_prob(infection_path_v, t1, Strategy, g, x.D[v]) * c2 * c3 * c4 * c5 * c6);
+                }
+            }
+        }
+    }
+
+    return P_A_t + P_T_t;
+}
