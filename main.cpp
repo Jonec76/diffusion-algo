@@ -7,6 +7,7 @@
 #include "algo.h"
 #include "graph.h"
 #include "init.h"
+#include "sas.h"
 using namespace std;
 
 const char* NAME = "main.txt";
@@ -211,5 +212,6 @@ void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
 
     vector<vector<struct X>> S;
     get_argmax_strategy(S, A, B, g);
+    SAS(S, 4000, g);
     free(X_in_set_B);
 }

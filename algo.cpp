@@ -30,8 +30,6 @@ void print_list(vector<struct X> list){
 }
 
 void fprint_list(FILE** fp, vector<struct X> list){
-    fprintf (*fp, "\n");
-    
     for(size_t i=0;i<list.size();i++){
         if(list[i].id == -1)
             continue;
