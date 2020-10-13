@@ -19,6 +19,8 @@ extern char OUTPUT_FILE[30];
 clock_t total_start, total_end;
 void get_list_A(vector<struct X> & A, Graph& g);
 void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g);
+int RA = 4000;
+
 
 int main(int argc, char **argv){
     total_start = clock();
@@ -212,6 +214,6 @@ void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
 
     vector<vector<struct X>> S;
     get_argmax_strategy(S, A, B, g);
-    SAS(S, 4000, g);
+    SAS(S, RA, g);
     free(X_in_set_B);
 }

@@ -44,7 +44,7 @@ void migrate_x(vector<vector<struct X> >& tmp_S, int m_bit, vector<struct X> X_l
         bool remove = m_bit & 1;
         if(remove){
             assert(m_t + migrate_day >= 0);
-            assert(m_t + migrate_day < tmp_S.size());
+            assert(m_t + migrate_day < (int)tmp_S.size());
             migrate_X.t = m_t + migrate_day;
             tmp_S[m_t + migrate_day].push_back(migrate_X);
         }else{
@@ -61,7 +61,7 @@ bool rescheduling(vector<struct X> Y, vector<struct X> Z, int ra, Graph& g, vect
     size_t y_size = Y.size();
     size_t z_size = Z.size();
 
-    cout<<"[rescheduling] Y size: "<<y_size<<" Z size: "<<z_size<<endl;
+    cout<<"[ rescheduling ] Y size: "<<y_size<<" Z size: "<<z_size<<endl;
     if(y_size == 0 && z_size == 0)
         return false;
 
@@ -108,7 +108,7 @@ bool rescheduling(vector<struct X> Y, vector<struct X> Z, int ra, Graph& g, vect
         migrate_x(tmp_S, sets[i].second, Z, 1);
 
         double migrate_F = diffusion(tmp_S, g);
-        cout<<"migrate: "<<migrate_F<<"F: "<<F<<endl;
+        cout<<"Scheduled list F: "<<migrate_F<<"Original F: "<<F<<endl;
         if(migrate_F > F){
 
             FILE * pFile;
@@ -209,7 +209,8 @@ void SAS(vector<vector<struct X> >&S, int ra, Graph& g){
         return;
     
     assert(period_T > 0);
-    size_t first =0, last = period_T;
+    int first =0;
+    size_t last = period_T;
     bool flag = true;
     
     while(flag){

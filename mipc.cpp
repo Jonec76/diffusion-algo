@@ -443,7 +443,6 @@ double SS(struct X x, vector<vector<struct X> > Strategy, Graph& g, int t){
         D_infection_paths.push_back(infection_path);
     }
 
-    double c_D = 1 / (double)x.D.size();
     int period_t = t + 1;
     double P_A_t=0, P_T_t=0;
 
