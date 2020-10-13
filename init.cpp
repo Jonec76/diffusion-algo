@@ -238,8 +238,13 @@ void set_config(char* argv, const char* file_name){
         printf("Failed to open file %s.", OUTPUT_FILE);
         exit(EXIT_FAILURE);
     }
+    printf ("=======================================================\n");
+    printf ("%-15s :%s\n%-15s :%s\n%-15s :%s\n%-15s :%s","Graph file: ", GRAPH_PATH, "Sample size ", input_line[1], "Budget ", input_line[2], "T", input_line[3]);
+    printf ("=======================================================\n");
+    
+    
     fprintf (pFile, "=======================================================\n");
-    fprintf (pFile, "%-15s :%s\n%-15s :%s\n%-15s :%s\n%-15s :%s\n","Graph file: ", GRAPH_PATH, "Sample size ", input_line[1], "Budget ", input_line[2], "T", input_line[3]);
+    fprintf (pFile, "%-15s :%s\n%-15s :%s\n%-15s :%s\n%-15s :%s","Graph file: ", GRAPH_PATH, "Sample size ", input_line[1], "Budget ", input_line[2], "T", input_line[3]);
     fprintf (pFile, "=======================================================\n");
     fclose (pFile);
     fclose (fp_config);
