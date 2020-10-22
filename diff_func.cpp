@@ -9,8 +9,9 @@
 
 using namespace std;
 
-string title[6] = {"susceptible", "infected", "ailing", "threatened", "dead", "recovered"};
 double alpha_f=0.944, alpha_g=0.5, param_c=2; 
+
+string title[6] = {"susceptible", "infected", "ailing", "threatened", "dead", "recovered"};
 extern vector<struct el> level_table;
 extern double w_S, w_I, w_R;
 

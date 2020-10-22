@@ -2,10 +2,11 @@
 #define DATA_H
 
 
+// only q_free is used (for representing the node who aren't quarantined ), 
 #define q_free 0
-#define q_low 1
-#define q_mid 2
-#define q_high 3
+// #define q_low 1
+// #define q_mid 2
+// #define q_high 3
 
 #define health_s 0
 #define health_i 1

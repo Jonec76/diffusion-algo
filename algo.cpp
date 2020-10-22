@@ -8,7 +8,7 @@
 using namespace std;
 
 extern vector<struct el>level_table;
-extern char OUTPUT_FILE[30];
+extern char OUTPUT_PATH[30];
 extern size_t sample_size, period_T;
 extern double budget, delta_c, delta_f, delta_i;
 
@@ -134,9 +134,9 @@ void calc_greedy(vector<vector<struct X> >& S, Graph& g, bool* X_in_set_S[], dou
 
 
     FILE * pFile;
-    pFile = fopen (OUTPUT_FILE, "a");
+    pFile = fopen (OUTPUT_PATH, "a");
     if (pFile == NULL) {
-        printf("Failed to open file %s.", OUTPUT_FILE);
+        printf("Failed to open file %s.", OUTPUT_PATH);
         exit(EXIT_FAILURE);
     }
     fprintf (pFile, "\n%-15s :%f\n%-15s :%d_%d\n%-15s :%f\n%-16s","greedy ", diffusion(S, g), "X ",  min_X.t, min_X.id, "cost", get_group_cost(S), "S ");
@@ -236,9 +236,9 @@ void PSPD_update_A(Graph& g, vector<struct X>& A, double* diff_baseline_table[],
     // For output A list gradually.
 
     // FILE * pFile;
-    // pFile = fopen (OUTPUT_FILE, "a");
+    // pFile = fopen (OUTPUT_PATH, "a");
     // if (pFile == NULL) {
-    //     printf("Failed to open file %s.", OUTPUT_FILE);
+    //     printf("Failed to open file %s.", OUTPUT_PATH);
     //     exit(EXIT_FAILURE);
     // }
     // fprintf (pFile, "\n%-15s :%f\n%-15s :%f\n%-15s :%f\n%-15s :%f\n%-15s :%d_%d_%d\n%-15s :","main: ",  max_value, "F(A U {X}, T)", ((*diff_baseline_table)[max_one_dim_idx] + *prev_best_A), "F(A, T)", *prev_best_A, "/ phi * C(D)", (level_table[best_X.lv].phi_cost * best_X.cost), "X_t_id_OneDim", best_X.t, best_X.id, max_one_dim_idx, "A Strategies");
@@ -391,9 +391,9 @@ void get_argmax_strategy(double* max_F, vector<vector<struct X>> &S, vector<stru
 
 
     FILE * pFile;
-    pFile = fopen (OUTPUT_FILE, "a");
+    pFile = fopen (OUTPUT_PATH, "a");
     if (pFile == NULL) {
-        printf("Failed to open file %s.", OUTPUT_FILE);
+        printf("Failed to open file %s.", OUTPUT_PATH);
         exit(EXIT_FAILURE);
     }
  

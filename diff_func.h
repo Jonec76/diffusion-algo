@@ -1,7 +1,6 @@
 #ifndef FUNC_H
 #define FUNC_H
 
-
 #include<vector>
 #include<iostream>
 #include "data.h"

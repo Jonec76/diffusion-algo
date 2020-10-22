@@ -11,7 +11,7 @@ const char* NAME = "greedy.txt";
 extern int sample_size;
 extern double budget;
 extern char GRAPH_PATH[50];
-extern char OUTPUT_FILE[30];
+extern char OUTPUT_PATH[30];
 clock_t total_start, total_end;
 
 int main(int argc, char **argv){
@@ -28,9 +28,9 @@ int main(int argc, char **argv){
 
 
     FILE * pFile;
-    pFile = fopen (OUTPUT_FILE, "a");
+    pFile = fopen (OUTPUT_PATH, "a");
     if (pFile == NULL) {
-        printf("Failed to open file %s.", OUTPUT_FILE);
+        printf("Failed to open file %s.", OUTPUT_PATH);
         exit(EXIT_FAILURE);
     }
     printf("Total time : %fs", (double)((total_end - total_start) / CLOCKS_PER_SEC));

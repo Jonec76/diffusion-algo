@@ -8,7 +8,7 @@
 
 const char* name = "mipc.txt";
 extern char MIPC_GRAPH_PATH[50];
-extern char MIPC_OUTPUT_FILE[30];
+extern char MIPC_OUTPUT_PATH[30];
 
 extern size_t period_T;  // 0 means himself, 1 means edge len=1 (1st extand)
 extern double A_END ;
@@ -197,9 +197,9 @@ void do_extend(vector<Path>& extended_path, vector<Path>& original_path, Path p)
 void output_path(vector<vector<Path>>&  infection_path){
     size_t total_path_num = infection_path.size();
     string line = "";
-    // FILE *fp = fopen(MIPC_OUTPUT_FILE, "a");
+    // FILE *fp = fopen(MIPC_OUTPUT_PATH, "a");
     // if (fp == NULL) {
-    //     printf("Failed to open file %s.", MIPC_OUTPUT_FILE);
+    //     printf("Failed to open file %s.", MIPC_OUTPUT_PATH);
     //     exit(EXIT_FAILURE);
     // }
     for(size_t i=0;i<total_path_num;i++){

@@ -7,7 +7,7 @@
 using namespace std;
 
 extern size_t sample_size, period_T;
-extern char OUTPUT_FILE[30];
+extern char OUTPUT_PATH[30];
 
 double diffusion_full_result(vector<vector<struct X> > Strategy, Graph& g){
     long double f = 0;
@@ -69,9 +69,9 @@ double diffusion_full_result(vector<vector<struct X> > Strategy, Graph& g){
     }
 
     FILE * pFile;
-    pFile = fopen (OUTPUT_FILE, "a");
+    pFile = fopen (OUTPUT_PATH, "a");
     if (pFile == NULL) {
-        printf("Failed to open file %s.", OUTPUT_FILE);
+        printf("Failed to open file %s.", OUTPUT_PATH);
         exit(EXIT_FAILURE);
     }
 
@@ -134,6 +134,7 @@ double diffusion(vector<vector<struct X> > Strategy, Graph& g){
     return f/(double)sample_size;
 }
 
+// Do diffusion with the specific level table (Opt uses only 2 levels table)
 double diffusion(vector<vector<struct X> > Strategy, Graph& g, vector<struct el> level_table_opt){
     long double f = 0;
     srand(time(0));
@@ -175,6 +176,7 @@ double diffusion(vector<vector<struct X> > Strategy, Graph& g, vector<struct el>
     return f/(double)sample_size;
 }
 
+// Do diffusion, calculate f with `get_positive_count` instead of `objective_at_t`
 double diffusion_greedy(vector<vector<struct X> > Strategy, Graph& g){
     size_t f = 0;
     srand(time(0));

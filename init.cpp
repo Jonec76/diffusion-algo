@@ -16,39 +16,31 @@ using namespace std;
 
 struct X X1, X2, X3, X4;
 
-// el0 is not used (0 for the group who are not quantined. we handle it in get_X_cost)
-
-struct el el0, el1 = {0.2, 0.2}, el2 = {0.8, 0.8}, el3 = {1, 1};
-vector<struct el> level_table = {el0, el1, el2, el3};
 const char* RESULT_DIR = "./result/";
 const char* GRAPH_DIR = "./covid_data/";
-char OUTPUT_FILE[50];
-char MIPC_OUTPUT_FILE[50];
-
-char MIPC_GRAPH_PATH [50];
 
 
-// c
-const size_t c_size = 4;
+// el0 is not used (0 for the group who are not quarantined. we handle it in get_X_cost)
+// lv1 -> el1, lv2 -> el2 and so on
+struct el el0, el1 = {0.2, 0.2}, el2 = {0.8, 0.8}, el3 = {1, 1};
+vector<struct el> level_table = {el0, el1, el2, el3};
 
 char GRAPH_PATH [50];
+char OUTPUT_PATH[50];
+char MIPC_OUTPUT_PATH[50];
+char MIPC_GRAPH_PATH [50];
+
+// the following params just get initialized here, they will set value via config file.
 size_t sample_size = 0;
 size_t period_T=0;
 double budget = 0;
 
-
-// p
-
-const size_t p_size = 8;
-
 double w_S = 0;
 double w_I = 0;
 double w_R = 0;
-
 double delta_c = 0;
 double delta_f = 0;
 double delta_i = 0;
-
 double THETA  = 0;
 double A_END  = 0;
 
@@ -231,11 +223,11 @@ void set_config(char* argv, const char* file_name){
     tmp = regex_replace(tmp, nl, "");
     tmp += ".txt"; 
 
-    strcpy(OUTPUT_FILE, tmp.c_str());
+    strcpy(OUTPUT_PATH, tmp.c_str());
     
-    FILE* pFile = fopen (OUTPUT_FILE, "a");
+    FILE* pFile = fopen (OUTPUT_PATH, "a");
     if (pFile == NULL) {
-        printf("Failed to open file %s.", OUTPUT_FILE);
+        printf("Failed to open file %s.", OUTPUT_PATH);
         exit(EXIT_FAILURE);
     }
     printf ("=======================================================\n");
@@ -286,10 +278,9 @@ void set_mipc_config(char* argv, const char* file_name){
     tmp = regex_replace(tmp, nl, "");
     tmp += ".txt"; 
 
-    strcpy(MIPC_OUTPUT_FILE, tmp.c_str());
+    strcpy(MIPC_OUTPUT_PATH, tmp.c_str());
 
-
-    FILE* pFile = fopen (MIPC_OUTPUT_FILE, "a");
+    FILE* pFile = fopen (MIPC_OUTPUT_PATH, "a");
     if (pFile == NULL) {
         printf("Failed to open file %s.", argv);
         exit(EXIT_FAILURE);

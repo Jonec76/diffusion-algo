@@ -11,7 +11,7 @@
 
 using namespace std;
 extern size_t period_T;
-extern char OUTPUT_FILE[30];
+extern char OUTPUT_PATH[30];
 
 void remove_yz(vector<vector<struct X> >& s, vector<struct X> Y, vector<struct X> Z){
     for(size_t i=0;i<Y.size();i++){
@@ -109,9 +109,9 @@ bool rescheduling(vector<struct X> Y, vector<struct X> Z, int ra, Graph& g, vect
         printf ("\n%-15s :%f\n%-15s :%f\n\n","Scheduled F ", migrate_F, "Original F ",  max_F);
         if(migrate_F > max_F){
             FILE * pFile;
-            pFile = fopen (OUTPUT_FILE, "a");
+            pFile = fopen (OUTPUT_PATH, "a");
             if (pFile == NULL) {
-                printf("Failed to open file %s.", OUTPUT_FILE);
+                printf("Failed to open file %s.", OUTPUT_PATH);
                 exit(EXIT_FAILURE);
             }
 

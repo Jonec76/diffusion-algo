@@ -1,21 +1,20 @@
 # "#": for comment, the line behine it will be ignored.
 # "c": for main, greedy, diffusion instruction
 # "m": for mipc instruction
-
-# graph_path,sample_size,budget,T (period time)
 # graph_path will read the file in the subdirectory "./covid_data/"
 
-c graph_4_T=1.txt,5,1,1
+# graph_path,sample_size,budget,T (period time)
+c graph_4_T=3.txt,5,3,3
+
+# w_S, w_I, w_R : diffusion Obj. function 
+# delta_c       : PSPD 
+# delta_f       : RCR, main 
+# delta_i       : PSPD 
+# theta         : MIPC (測試建議大於 0.1, 不然會跑太久)
+# a_end         : MIPC
+
+# w_S,w_I,w_R,delta_c,delta_f,delta_i,theta,a_end
+p 0.3,0.4,0.5,1,1,1,0.3,0.9
 
 # graph_path,A_END,theta,T(period time),v(node)
 # m test_graph.txt,0.5,0,4,0
-
-# diffusion obj function: w_S, w_I, w_R
-# PSPD       : delta_c
-# RCR, main  : delta_f
-# PSPD       : delta_i
-# MIPC       : theta (建議大於 0, 不然會跑太久)
-# MIPC       : a_end
-# w_S,w_I,w_R,delta_c,delta_f,delta_i,theta,a_end
-
-p 0.3,0.4,0.5,1,1,1,0.1,0.9

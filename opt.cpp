@@ -12,12 +12,11 @@
 using namespace std;
 
 const char* NAME = "opt.txt";
-extern char* RESULT_DIR;
 extern int sample_size;
 extern size_t period_T;
 extern double budget;
 extern char GRAPH_PATH[50];
-extern char OUTPUT_FILE[30];
+extern char OUTPUT_PATH[30];
 extern const size_t n_size;
 extern const size_t g_size;
 extern const size_t e_size;
@@ -41,9 +40,9 @@ int main(int argc, char **argv){
 
 
     FILE * pFile;
-    pFile = fopen (OUTPUT_FILE, "a");
+    pFile = fopen (OUTPUT_PATH, "a");
     if (pFile == NULL) {
-        printf("Failed to open file %s.", OUTPUT_FILE);
+        printf("Failed to open file %s.", OUTPUT_PATH);
         exit(EXIT_FAILURE);
     }
 
@@ -126,9 +125,9 @@ void opt(Graph &g, const char* GRAPH_FILE) {
     }
 
     FILE * pFile;
-    pFile = fopen (OUTPUT_FILE, "a");
+    pFile = fopen (OUTPUT_PATH, "a");
     if (pFile == NULL) {
-        printf("Failed to open file %s.", OUTPUT_FILE);
+        printf("Failed to open file %s.", OUTPUT_PATH);
         exit(EXIT_FAILURE);
     }
     fprintf(pFile,"Optimal Value : %3f\nOptimal Strategy Index : %d\n\nStrategy :\n",max,max_index);

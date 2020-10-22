@@ -14,7 +14,7 @@ const char* NAME = "main.txt";
 extern int sample_size;
 extern double budget, delta_f;
 extern char GRAPH_PATH[50];
-extern char OUTPUT_FILE[30];
+extern char OUTPUT_PATH[30];
 
 clock_t total_start, total_end;
 void get_list_A(vector<struct X> & A, Graph& g);
@@ -35,9 +35,9 @@ int main(int argc, char **argv){
     total_end = clock();
 
     FILE * pFile;
-    pFile = fopen (OUTPUT_FILE, "a");
+    pFile = fopen (OUTPUT_PATH, "a");
     if (pFile == NULL) {
-        printf("Failed to open file %s.", OUTPUT_FILE);
+        printf("Failed to open file %s.", OUTPUT_PATH);
         exit(EXIT_FAILURE);
     }
     printf("Total time : %fs", (double)((total_end - total_start) / CLOCKS_PER_SEC));
@@ -61,18 +61,6 @@ void algo_main(Graph& g){
 
     get_list_A(A, g);
     get_list_B(B, A, g);
-    // the following is a test A_list for graph_4
-    // A.push_back(null_X);
-    // A.push_back(g.U[0][21]);
-    // A.push_back(g.U[0][60]);
-    // A.push_back(g.U[0][238]);
-    // A.push_back(g.U[0][165]);
-    // A.push_back(g.U[0][93]);
-    // A.push_back(g.U[0][237]);
-    // A.push_back(g.U[0][203]);
-    // A.push_back(g.U[0][12]);
-    // A.push_back(g.U[0][294]);
-    // cout<<"\n";
 }
 
 void get_list_A(vector<struct X> & A, Graph& g){
