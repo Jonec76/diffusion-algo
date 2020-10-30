@@ -15,6 +15,7 @@ extern int sample_size;
 extern double budget, delta_f;
 extern char GRAPH_PATH[50];
 extern char OUTPUT_PATH[30];
+extern size_t period_T;
 
 clock_t total_start, total_end;
 void get_list_A(vector<struct X> & A, Graph& g);
@@ -95,13 +96,16 @@ void get_list_A(vector<struct X> & A, Graph& g){
 }
 
 void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
-    int i_day=0, j_day=0;
     
+    int i_day=0, j_day=0;
     double cost_B = 0;
 
     int len_A = A.size() -1; // For ignoring the first empty element.
     bool* X_in_set_B = (bool*) malloc(g.U_LENGTH*sizeof(bool));
     memset(X_in_set_B, false, g.U_LENGTH * sizeof(bool)); // for clearing previous record
+    bool* picked_day = (bool*) malloc((period_T+1)*sizeof(bool));
+    memset(picked_day, false, (period_T+1) * sizeof(bool)); // for clearing previous record
+
     vector<vector<struct X>> set_C;
     bool A_finish_with_no_better_B = false;
     clock_t start, end;
@@ -140,10 +144,13 @@ void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
             }else{
                 // RCR: 1. trim list C 
                 //      2. C_i -> C_i+1
-
                 cout<<"[ In RCR 1 ]\n";
-                j_day = RCR(A, B, set_C, j_day, i_day, g, &X_in_set_B);
-                i_day = j_day+1;
+                if(is_RCR_simple)
+                    i_day = RCR_simple(A, B, set_C, i_day, g, &X_in_set_B, &picked_day);
+                else{
+                    j_day = RCR(A, B, set_C, j_day, i_day, g, &X_in_set_B);
+                    i_day = j_day+1;
+                }
             }
         }else{
             // F("B"_i)
@@ -188,9 +195,12 @@ void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
                 }
             }else{
                 cout<<"[ In RCR 2 ]\n";
-                j_day = RCR(A, B, set_C, j_day, i_day, g, &X_in_set_B);
-                i_day = j_day +1;
-                // RCR
+                if(is_RCR_simple)
+                    i_day = RCR_simple(A, B, set_C, i_day, g, &X_in_set_B, &picked_day);
+                else{
+                    j_day = RCR(A, B, set_C, j_day, i_day, g, &X_in_set_B);
+                    i_day = j_day+1;
+                }
             }
         }
         cost_B = get_group_cost(B);
@@ -205,4 +215,5 @@ void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
     get_argmax_strategy(&max_F, S, A, B, g);
     SAS(S, RA, g, max_F);
     free(X_in_set_B);
+    free(picked_day);
 }

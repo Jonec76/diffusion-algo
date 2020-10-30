@@ -29,4 +29,5 @@ void get_X_max_F(double* X_max_F, vector<struct X>& X_max, Graph& g);
 void get_argmax_strategy(double* max_F, vector<vector<struct X>> &S, vector<struct X>&A, vector<struct X>&B, Graph& g);
 vector<struct X> get_candidate_i(vector<vector<struct X>> list, size_t i_day);
 size_t RCR(vector<struct X>& A, vector<struct X>& B, vector<vector<struct X>>& C, int j_day, int i_day, Graph& g, bool* X_in_set_B[]);
+size_t RCR_simple(vector<struct X>& A, vector<struct X>& B,vector<vector<struct X>>& C, int i_day, Graph& g, bool* X_in_set_B[],  bool* picked_day[]);
 #endif

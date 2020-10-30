@@ -18,6 +18,8 @@
 #define out_of_budget true
 #define has_in_set -1
 
+#define is_RCR_simple false
+
 #include<iostream>
 #include<vector>
 using namespace std;

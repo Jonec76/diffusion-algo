@@ -528,7 +528,7 @@ size_t RCR(vector<struct X>& A, vector<struct X>& B,vector<vector<struct X>>& C,
             int rand_idx = (rand() % c_obj_list.size()); //here: 0;
             double rand_r = (rand() % 100) / 100.0;
 
-            if(rand_r < c_obj_list[rand_idx].softmax_value){
+            if(rand_r < c_obj_list[rand_idx].softmax_value && !(*X_in_set_B)[c_obj_list[rand_idx].c_X.one_dim_id]){
                 find_redisign_C = true;
                 // Not yet implement removing element from C_l, but I think it's not really necessary to do it?
                 // Becaurse j+1 will never less than l
@@ -559,3 +559,79 @@ size_t RCR(vector<struct X>& A, vector<struct X>& B,vector<vector<struct X>>& C,
     return 0;
 }
 
+size_t RCR_simple(vector<struct X>& A, vector<struct X>& B,vector<vector<struct X>>& C, int i_day, Graph& g, bool* X_in_set_B[],  bool* picked_day[]){
+    vector<struct CRObj> c_obj_list;
+
+    bool X_in_set_C[g.U_LENGTH];
+    memset(X_in_set_C, false, g.U_LENGTH * sizeof(bool));
+    // k starts from 1
+
+    for(int k=1;k<=i_day;k++){
+        if((*picked_day)[k])
+            continue;
+        vector<struct X> A_i = get_sublist(A, k);
+        vector<struct X> B_i = get_sublist(B, k-1);
+        vector<struct X> C_i = get_candidate_i(C, k);
+        if(C_i.size() == 0)
+            continue;
+        srand(time(0));
+
+        for(size_t x=0;x<C_i.size();x++){
+            B_i.push_back(C_i[x]);
+            if(diffusion(one_to_two_dim(B_i), g) < (1 - delta_f) * diffusion(one_to_two_dim(A_i), g)){
+                C_i.erase(C_i.begin() + x);
+                x--;
+            }else{
+                if(!X_in_set_C[C_i[x].one_dim_id]){
+                    X_in_set_C[C_i[x].one_dim_id] = true;
+                    vector<struct X> B_k = get_sublist(B, k);
+                    vector<struct X> B_list = get_sublist(B, k-1);
+                    struct CRObj c_obj;
+                    c_obj.c_X = C_i[x];
+                    c_obj.k_day = k;
+                    // CR=0: 
+                    //    case1. there's no any v[t1] in h_prob(), so h_prob() will return 1
+                    //           get_H_u will become 0 -> P_S_t=0 -> sum_value in CR = 0
+                    c_obj.diff = CR(C_i[x], one_to_two_dim(B_i), g) - CR(B_k[B_k.size()-1], one_to_two_dim(B_i), g);
+                    c_obj_list.push_back(c_obj);
+                }
+            }
+            B_i.pop_back();
+        }
+    }
+
+    if(c_obj_list.size()!=0){
+        update_softmax_value(c_obj_list);
+        bool find_redisign_C = false;
+        while(!find_redisign_C){
+            int rand_idx = (rand() % c_obj_list.size()); //here: 0;
+            double rand_r = (rand() % 100) / 100.0;
+
+            if(rand_r < c_obj_list[rand_idx].softmax_value && !(*X_in_set_B)[c_obj_list[rand_idx].c_X.one_dim_id]){
+                find_redisign_C = true;
+                // Not yet implement removing element from C_l, but I think it's not really necessary to do it?
+                // Because j+1 will never less than l
+                int l = c_obj_list[rand_idx].k_day; // keep the list before C_x_k(include k) and remove list after day k.
+                (*picked_day)[l] = true;
+                B[l] = c_obj_list[rand_idx].c_X;
+                // Not clear the X which is replaced.
+                (*X_in_set_B)[c_obj_list[rand_idx].c_X.one_dim_id] = true;
+                assert(C.size()+1 == B.size());
+                return i_day;
+            }
+        }
+    }else{
+        vector<struct X> C_per_t ;
+        // Notice that X_in_set_B.i+1 day true ? false ?
+        cost_update_C(C_per_t, g, B, X_in_set_B, i_day);
+        int max_X_idx_in_C;
+
+        // max_B_F = F("B"_i U {B_i+1})
+        double max_B_F;
+        get_max_idx_from_C(&max_B_F, &max_X_idx_in_C, B, C_per_t, g);
+        migrate_strategy(B, C_per_t, max_X_idx_in_C, X_in_set_B);
+        C.push_back(C_per_t);// C_i -> C_i+1
+        return i_day+1;
+    }
+    return 0;
+}
