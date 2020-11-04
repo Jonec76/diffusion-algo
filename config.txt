@@ -1,11 +1,12 @@
 # "#": for comment, the line behine it will be ignored.
 # "c": for main, greedy, diffusion instruction
-# "m": for mipc instruction
+# "m": for mipc instruction (It has been removed)
 # graph_path will read the file in the subdirectory "./covid_data/"
 
 # graph_path,sample_size,budget,T (period time)
 c graph_4_T=3.txt,5,3,3
 
+#     (參數)      （該參數使用於哪個 function）
 # w_S, w_I, w_R : diffusion Obj. function 
 # delta_c       : PSPD 
 # delta_f       : RCR, main 
