@@ -145,7 +145,7 @@ void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
                 // RCR: 1. trim list C 
                 //      2. C_i -> C_i+1
                 cout<<"[ In RCR 1 ]\n";
-                if(is_RCR_simple)
+                if(RCR_simple_version)
                     i_day = RCR_simple(A, B, set_C, i_day, g, &X_in_set_B, &picked_day);
                 else{
                     j_day = RCR(A, B, set_C, j_day, i_day, g, &X_in_set_B);
@@ -195,7 +195,7 @@ void get_list_B(vector<struct X> & B, vector<struct X> & A, Graph& g){
                 }
             }else{
                 cout<<"[ In RCR 2 ]\n";
-                if(is_RCR_simple)
+                if(RCR_simple_version)
                     i_day = RCR_simple(A, B, set_C, i_day, g, &X_in_set_B, &picked_day);
                 else{
                     j_day = RCR(A, B, set_C, j_day, i_day, g, &X_in_set_B);

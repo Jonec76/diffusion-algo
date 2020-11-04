@@ -18,7 +18,7 @@
 #define out_of_budget true
 #define has_in_set -1
 
-#define is_RCR_simple false
+#define RCR_simple_version true
 
 #include<iostream>
 #include<vector>

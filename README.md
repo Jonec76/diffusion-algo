@@ -22,7 +22,7 @@
     - theta
     - a_end
 - data.h
-    - simple/original RCR
+    - RCR_simple_version
 - diff_func.cpp 
     - alpha_f=0.944 (使用於 Obj. function)
     - alpha_g=0.5 (使用於 Obj. function)
