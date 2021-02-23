@@ -19,17 +19,17 @@
         8. Healing(from Ailing)
         9. Healing(from Threatened)
         10. Death
+        11. node av(MIP_coder procedure 2)
     - e
         1. n1 (邊的左右其中一個點)
         2. n2 (邊的扣除 n1 的另一點)
         3. p (邊的機率)
     - X
-        1. id
-        2. t (該 group 屬於第 t 天)
-        3. cost (隔離該 group 的成本)
-        4. lv (該 group 的 level)
-        5. eta （初始值是 `-1`）
-        6. n1,n2,…,nz （該 group 的所有的點）
+        1. t (該 group 屬於第 t 天)
+        2. cost (隔離該 group 的成本)
+        3. lv (該 group 的 level)
+        4. eta （初始值是 `-1`）
+        5. n1,n2,…,nz （該 group 的所有的點）
 - value range
     - g
         - V: 從 1 開始算
