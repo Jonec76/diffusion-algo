@@ -13,11 +13,8 @@ extern size_t sample_size, period_T;
 extern double budget, delta_c, delta_f, delta_i;
 
 double get_X_cost(struct X x_t){
-    if(x_t.id == -1)
+    if(x_t.id == -1 || x_t.lv == 0)
         return 0;
-    if (x_t.lv == 0){
-        return 1;
-    }
     else{
         return level_table[x_t.lv].phi_cost * x_t.cost;
     }
@@ -221,7 +218,10 @@ void PSPD_update_A(Graph& g, vector<struct X>& A, double* diff_baseline_table[],
 
             //double denominator = (level_table[u_X.lv].phi_cost * u_X.cost);
             double denominator = get_X_cost(u_X);
-            assert(denominator != 0);
+            if(denominator == 0){
+                one_dim_idx_A++;
+                continue;
+            }
             if((baseline_value / denominator) > max_value){
                 best_X = u_X;
                 max_one_dim_idx = one_dim_idx_A;
