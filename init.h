@@ -8,6 +8,7 @@ const size_t e_size = 3;
 const size_t x_size = 5;
 const size_t c_size = 4;
 const size_t p_size = 8;
+const size_t gene_size = 3;
 
 void set_mipc_config(char* argv, const char* file_name);
 void set_config(char* argv, const char* file_name);

@@ -16,10 +16,16 @@ extern double budget;
 extern char GRAPH_PATH[50];
 extern char OUTPUT_PATH[30];
 extern vector<struct el> level_table;
+extern int population_num;
+extern int epoch;
+extern double m_probability;
+
 clock_t total_start, total_end;
 vector<vector<struct X> > algo_genetic(Graph& g);
-const int cost_table[4] = {0, 1, 2, 3};
 
+const int g_range = 4; 
+const int cost_table[4] = {0, 1, 2, 3};
+////////////////////
 
 int main(int argc, char **argv){
     Graph g;
@@ -72,7 +78,6 @@ void compute_gene_score(double **gene_score, vector<vector<int>> population, Gra
 
     for(size_t i=0;i<population.size();i++){
         vector<int> gene = population[i];
-        double gene_cost = 0.0;
         for(size_t t=0;t<population[i].size();t++){
             int lv = population[i][t];
             g.U[t][0].t = t;
@@ -195,14 +200,6 @@ void mutation(vector<vector<int>>& population, double m_probability, double budg
 }
 
 vector<vector<struct X> > algo_genetic(Graph& g){
-    int budget = 10;
-    int g_range = 4;
-    int population_num = 8;
-    int eta = -1;
-    int epoch = 15;
-    double m_probability = 0.1;
-    /////////////////
-
     assert(population_num >= 2);
     init_strategy_U_gene(g);
 

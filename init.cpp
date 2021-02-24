@@ -43,6 +43,9 @@ double delta_f = 0;
 double delta_i = 0;
 double THETA  = 0;
 double A_END  = 0;
+int population_num;
+int epoch;
+double m_probability;
 
 void init_node(Graph& g, vector<char*>& input_line){
     struct node* n = (struct node*)malloc(sizeof(struct node));
@@ -90,7 +93,7 @@ void init_strategy_U_gene(Graph& g){
     for(size_t t=0;t<period_T;t++){
         struct X x;
         x.id = t;
-        for(int v=0;v<g.V;v++){
+        for(size_t v=0;v<g.V;v++){
             x.D.push_back(v);
         }
         vector<struct X> tmp;
@@ -186,7 +189,7 @@ void set_config(char* argv, const char* file_name){
 
     char *line = NULL;
     size_t len = 0;
-    vector<char*>input_line, params_input_line;
+    vector<char*>input_line, params_input_line, gene_input_line;
 
     while ((getline(&line, &len, fp_config)) != -1) {
         char* type = strtok(line, " ");
@@ -216,6 +219,13 @@ void set_config(char* argv, const char* file_name){
 
             THETA  = atof(params_input_line[6]);
             A_END  = atof(params_input_line[7]);
+        }else if(strcmp(type, "G") == 0){
+            get_split_data(gene_input_line, data, ",");
+            assert(gene_input_line.size() == gene_size && "Wrong G config");
+            
+            population_num = atoi(gene_input_line[0]);
+            epoch = atoi(gene_input_line[1]);
+            m_probability = atof(gene_input_line[2]);
         }
         line = NULL;
     }
