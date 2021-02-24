@@ -24,7 +24,7 @@ extern const size_t x_size;
 
 clock_t total_start, total_end;
 void opt(Graph &g, const char* GRAPH_FILE);
-struct el opt_el0, opt_el1 = {0.5, 0.5}, opt_el2 = {1, 1};
+struct el opt_el0={0, 0}, opt_el1 = {0.5, 0.5}, opt_el2 = {1, 1};
 vector<struct el> level_table_opt = {opt_el0, opt_el1, opt_el2};
 
 int main(int argc, char **argv){
