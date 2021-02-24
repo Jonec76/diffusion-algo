@@ -86,46 +86,65 @@ void compute_gene_score(double **gene_score, vector<vector<int>> population, Gra
     return;
 }   
 
-void selection(int** candidates, double** gene_score, int population_num){
-    double largest = (*gene_score)[0];
-    double largest1 = (*gene_score)[1];
+
+void select_candidate(int** candidates, double* gene_score, int population_num, int factor){
+    double n1 = factor*gene_score[0];
+    double n2 = factor*gene_score[1];
     double temp;
 
     (*candidates)[0] = 0;
     (*candidates)[1] = 1;
 
-    if (largest < largest1){
-        temp = largest;
-        largest = largest1;
-        largest1 = temp;
+    if (n1 < n2){
+        temp = n1;
+        n1 = n2;
+        n2 = temp;
         (*candidates)[0] = 1;
         (*candidates)[1] = 0;
     }
  
     for (int i = 2; i < population_num; i++){
-        if ((*gene_score)[i] > largest){
-            largest1 = largest;
-            largest = (*gene_score)[i];
+        if (factor*gene_score[i] > n1){
+            n2 = n1;
+            n1 = factor*gene_score[i];
             (*candidates)[1] = (*candidates)[0];
             (*candidates)[0] = i;
         }
-        else if ((*gene_score)[i] > largest1 && (*gene_score)[i] != largest){
-            largest1 = (*gene_score)[i];
+        else if (factor*gene_score[i] > n2 && factor*gene_score[i] != n1){
+            n2 = factor*gene_score[i];
             (*candidates)[1] = i;
         }
     }
-    printf("largest: %f, second largest: %f\n", largest, largest1);
 }
 
-void crossover(vector<vector<int>>& population, int* candidates){
-    int largest = candidates[0];
-    int largest1 = candidates[1];
+void selection_stage(int** smallest_candidates, int** largest_candidates, double* gene_score, int population_num){
+    select_candidate(largest_candidates, gene_score, population_num, 1);
+    select_candidate(smallest_candidates, gene_score, population_num, -1);
+    printf("largest: %f, second largest: %f\n", gene_score[(*largest_candidates)[0]], gene_score[(*largest_candidates)[1]]);
+}
+
+void crossover(vector<vector<int>>& population, int* largest_candidates, int* smallest_candidates){
+
+    int largest = largest_candidates[0];
+    int largest1 = largest_candidates[1];
+
+    int smallest = smallest_candidates[0];
+    int smallest1 = smallest_candidates[1];
+    
+    vector<int>largest_origin_vector = population[largest];
+    vector<int>largest1_origin_vector = population[largest1];
+
     int cross_point = 1 + (rand() % period_T);
 
     for(int i=0;i<cross_point;i++){
         int tmp = population[largest][i];
         population[largest][i] = population[largest1][i];
         population[largest1][i] = tmp;
+    }
+
+    for(int t=0;t<period_T;t++){
+        population[smallest][t] = largest_origin_vector[t];
+        population[smallest1][t] = largest1_origin_vector[t];
     }
 }
 
@@ -178,10 +197,10 @@ void mutation(vector<vector<int>>& population, double m_probability, double budg
 vector<vector<struct X> > algo_genetic(Graph& g){
     int budget = 10;
     int g_range = 4;
-    int population_num = 5;
+    int population_num = 8;
     int eta = -1;
-    int epoch = 50;
-    double m_probability = 0.3;
+    int epoch = 15;
+    double m_probability = 0.1;
     /////////////////
 
     assert(population_num >= 2);
@@ -193,7 +212,6 @@ vector<vector<struct X> > algo_genetic(Graph& g){
 
     // init population
     vector<vector<int>> population;
-
     population = init_population(budget, g_range, period_T, population_num);
 
     // compute fitness score
@@ -204,18 +222,26 @@ vector<vector<struct X> > algo_genetic(Graph& g){
     }
     for(int i=0;i<population_num;i++)
         gene_score[i] = 0.0;
-    
-
     compute_gene_score(&gene_score, population, g);
+
     // evolve loop
-    int* candidates = (int*)malloc(2*sizeof(int)); // For pick largest two numbers index.
+    int* largest_candidates = (int*)malloc(2*sizeof(int)); // For pick largest two numbers index.
+    int* smallest_candidates = (int*)malloc(2*sizeof(int)); // For pick smallest two numbers index.
 
     for(int i=0;i<epoch;i++){
-        selection(&candidates, &gene_score, population_num);
-        crossover(population, candidates);
+        selection_stage(&smallest_candidates, &largest_candidates, gene_score, population_num);
+        crossover(population, largest_candidates, smallest_candidates);
         mutation(population, m_probability, budget, g_range);
         compute_gene_score(&gene_score, population, g);
     }
+    // for(int i=0;i<population_num;i++)
+    //     printf("%f ", gene_score[i]);
+    // puts("\n");
+
+
+    // for(int i=0;i<2;i++)
+    //     printf("%d\n", candidates[i]);
+
     return S;
 }
 
