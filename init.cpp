@@ -22,7 +22,7 @@ const char* GRAPH_DIR = "./covid_data/";
 
 // el0 is not used (0 for the group who are not quarantined. we handle it in get_X_cost)
 // lv1 -> el1, lv2 -> el2 and so on
-struct el el0, el1 = {0.2, 0.2}, el2 = {0.8, 0.8}, el3 = {1, 1};
+struct el el0={0, 0}, el1 = {0.2, 0.2}, el2 = {0.8, 0.8}, el3 = {1, 1};
 vector<struct el> level_table = {el0, el1, el2, el3};
 
 char GRAPH_PATH [50];
@@ -80,6 +80,23 @@ void init_strategy_U(Graph& g, vector<char*>& input_line){
         token = strtok(NULL, delim);
     }
     g.U[x.t].push_back(x);
+}
+
+void init_strategy_U_gene(Graph& g){
+    // clear the previous initialized strategy(because we are going to put all nodes into quarantine group)
+    // reconsturct the "create_graph" is a better way for solving the problem.
+    // Init U
+    g.U.clear();
+    for(size_t t=0;t<period_T;t++){
+        struct X x;
+        x.id = t;
+        for(int v=0;v<g.V;v++){
+            x.D.push_back(v);
+        }
+        vector<struct X> tmp;
+        tmp.push_back(x);
+        g.U.push_back(tmp);
+    }
 }
 
 void get_split_data(vector<char*>& input_line, char* data, char const data_delim[]){

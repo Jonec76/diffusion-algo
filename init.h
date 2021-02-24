@@ -14,6 +14,7 @@ void set_config(char* argv, const char* file_name);
 void init_node(Graph& g, vector<char*>& input_line);
 void init_edge(Graph& g, vector<char*>& input_line);
 void init_strategy_U(Graph& g, vector<char*>& input_line);
+void init_strategy_U_gene(Graph& g);
 void get_split_data(vector<char*>& input_line, char* data, const char data_delim[]);
 void create_graph(Graph &g, const char* GRAPH_FILE);
 void create_quarantine_strategy(Graph& g, const char* GROUP_FILE);
