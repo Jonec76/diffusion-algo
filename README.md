@@ -9,6 +9,9 @@
    執行 opt 演算法 => `./opt config.txt`
     - config 中的圖要換成 `OPTgraph_` 開頭的圖檔
     - config `c` 後面的參數要對上圖檔檔名的 T, b
+   執行 genetic 演算法 => `./genetic config.txt`
+    - config `G` 用來調整演算法參數
+    - graph 裡頭， X 開頭的指令策略不重要，可以刪掉 X 並且將 g 的第三個參數設為 0
 
 ## 參數
 

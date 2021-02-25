@@ -24,6 +24,8 @@ clock_t total_start, total_end;
 vector<vector<struct X> > algo_genetic(Graph& g);
 
 const int g_range = 4; 
+
+// {cost of level=0, cost of level=1, cost of level=2, cost of level=3}
 const int cost_table[4] = {0, 1, 2, 3};
 ////////////////////
 
@@ -40,12 +42,19 @@ int main(int argc, char **argv){
     total_end = clock();
 }
 
-void print_vector(vector<vector<int>> population){
+void fprint_vector(int smallest_candidates[], int largest_candidates[], double* gene_score, vector<vector<int>> population, FILE* f){
     for(size_t i=0;i<population.size();i++){
+        if((int)i == smallest_candidates[0] || (int)i == smallest_candidates[1])
+            fprintf(f, ". ");
+        else if((int)i == largest_candidates[0] || (int)i == largest_candidates[1])
+            fprintf(f, "* ");
+        else
+            fprintf(f, "  ");
+
         for(size_t j=0;j<population[i].size();j++){
-            printf("%d", population[i][j]);
+            fprintf(f, "%d", population[i][j]);
         }
-        puts("\n");
+        fprintf(f, " = %f \n", gene_score[i]);
     }
 }
 
@@ -92,7 +101,7 @@ void compute_gene_score(double **gene_score, vector<vector<int>> population, Gra
 }   
 
 
-void select_candidate(int** candidates, double* gene_score, int population_num, int factor){
+void select_candidate(int candidates[][2], double* gene_score, int population_num, int factor){
     double n1 = factor*gene_score[0];
     double n2 = factor*gene_score[1];
     double temp;
@@ -109,7 +118,7 @@ void select_candidate(int** candidates, double* gene_score, int population_num, 
     }
  
     for (int i = 2; i < population_num; i++){
-        if (factor*gene_score[i] > n1){
+        if (factor*gene_score[i] >= n1 && i != n1){
             n2 = n1;
             n1 = factor*gene_score[i];
             (*candidates)[1] = (*candidates)[0];
@@ -122,10 +131,9 @@ void select_candidate(int** candidates, double* gene_score, int population_num, 
     }
 }
 
-void selection_stage(int** smallest_candidates, int** largest_candidates, double* gene_score, int population_num){
+void selection_stage(int smallest_candidates[][2], int largest_candidates[][2], double* gene_score, int population_num){
     select_candidate(largest_candidates, gene_score, population_num, 1);
     select_candidate(smallest_candidates, gene_score, population_num, -1);
-    printf("largest: %f, second largest: %f\n", gene_score[(*largest_candidates)[0]], gene_score[(*largest_candidates)[1]]);
 }
 
 void crossover(vector<vector<int>>& population, int* largest_candidates, int* smallest_candidates){
@@ -153,11 +161,12 @@ void crossover(vector<vector<int>>& population, int* largest_candidates, int* sm
     }
 }
 
-void mutation(vector<vector<int>>& population, double m_probability, double budget, int g_range){
+void mutation(vector<vector<int>>& population, double m_probability, double budget, int g_range, int* largest_candidates){
     srand(time(0));
-    for(size_t i=0;i<population.size();i++){
+    for(size_t i=0;i<2;i++){
         double total_cost = 0;
-        for(size_t j=0;j<population[i].size();j++){
+        int crossover_gene_index = largest_candidates[i];
+        for(size_t j=0;j<population[crossover_gene_index].size();j++){
             double r = (rand() % 100)/100.0; 
             if(r < m_probability){
                 int lv = (rand() % g_range);
@@ -169,13 +178,13 @@ void mutation(vector<vector<int>>& population, double m_probability, double budg
                 else
                     total_cost += new_cost;
 
-                population[i][j] = lv;
+                population[crossover_gene_index][j] = lv;
             }else{
-                int lv = population[i][j];
+                int lv = population[crossover_gene_index][j];
                 double cost = level_table[lv].phi_cost * cost_table[lv];
                 
                 if(total_cost+cost > budget){
-                    population[i][j] = 0;
+                    population[crossover_gene_index][j] = 0;
                 }
                 else
                     total_cost += cost;
@@ -203,14 +212,22 @@ vector<vector<struct X> > algo_genetic(Graph& g){
     assert(population_num >= 2);
     init_strategy_U_gene(g);
 
-    printf("Start genetic algorithm ..\n\n");
+    FILE * pFile;
+    pFile = fopen (OUTPUT_PATH,"w");
+    fprintf(pFile, "=======================================================\n");
+    fprintf(pFile, "population amount   : %d\n", population_num);
+    fprintf(pFile, "epoch               : %d\n", epoch);
+    fprintf(pFile, "mutation probability: %f\n", m_probability);
+    fprintf(pFile, "* = two largest scores, . = two smallest scores\n");
+    fprintf(pFile, "=======================================================\n");
+    printf("Start genetic algorithm ...\n\n");
     vector<vector<struct X> > S;
     init_strategy(S);
-
+    
     // init population
     vector<vector<int>> population;
     population = init_population(budget, g_range, period_T, population_num);
-
+    
     // compute fitness score
     double* gene_score = (double*)malloc(population_num *sizeof(double));
     if(gene_score == NULL){
@@ -222,13 +239,17 @@ vector<vector<struct X> > algo_genetic(Graph& g){
     compute_gene_score(&gene_score, population, g);
 
     // evolve loop
-    int* largest_candidates = (int*)malloc(2*sizeof(int)); // For pick largest two numbers index.
-    int* smallest_candidates = (int*)malloc(2*sizeof(int)); // For pick smallest two numbers index.
+    int largest_candidates[2] ; // For pick largest two numbers index.
+    int smallest_candidates[2]; // For pick smallest two numbers index.
 
     for(int i=0;i<epoch;i++){
+        printf("epoch (%d/%d) \n", i+1, epoch);
+        fprintf(pFile, "\n[epoch %d] ", i+1);
         selection_stage(&smallest_candidates, &largest_candidates, gene_score, population_num);
+        fprintf(pFile, "(* %f, * %f)\n", gene_score[largest_candidates[0]], gene_score[largest_candidates[1]]);
+        fprint_vector(smallest_candidates, largest_candidates, gene_score, population, pFile);
         crossover(population, largest_candidates, smallest_candidates);
-        mutation(population, m_probability, budget, g_range);
+        mutation(population, m_probability, budget, g_range, largest_candidates);
         compute_gene_score(&gene_score, population, g);
     }
     // for(int i=0;i<population_num;i++)
